@@ -2,9 +2,11 @@ import Header from '../components/Layout/Header'
 import StatCard from '../components/Cards/StatCard'
 import AgentCard from '../components/Cards/AgentCard'
 import { useAgents } from '../hooks/useAgents'
+import { useDashboardSummary } from '../hooks/useEvents'
 
 export default function Dashboard() {
   const { data: agents, isLoading } = useAgents()
+  const { data: summary } = useDashboardSummary()
 
   const activeCount = agents?.filter((a) => a.status === 'active').length ?? 0
   const onlineCount = agents?.filter((a) => a.is_online).length ?? 0
@@ -17,8 +19,28 @@ export default function Dashboard() {
         <StatCard label="Total Agents" value={agents?.length ?? 0} />
         <StatCard label="Active" value={activeCount} />
         <StatCard label="Online Now" value={onlineCount} trend={onlineCount > 0 ? 'up' : 'neutral'} />
-        <StatCard label="Events Today" value="—" subtext="Connect PostHog" />
+        <StatCard
+          label="Events Today"
+          value={summary?.events_today ?? 0}
+          subtext={summary ? `${summary.total_events.toLocaleString()} total` : undefined}
+        />
       </div>
+
+      {/* Event stats row */}
+      {summary && summary.total_events > 0 && (
+        <div className="grid grid-cols-3 gap-4 mb-6">
+          <StatCard label="Pipeline Runs" value={summary.total_pipeline_runs} />
+          <StatCard
+            label="Pass Rate"
+            value={`${summary.pass_rate}%`}
+            trend={summary.pass_rate > 50 ? 'up' : 'down'}
+          />
+          <StatCard
+            label="Avg Duration"
+            value={summary.avg_duration_ms != null ? `${summary.avg_duration_ms}ms` : '—'}
+          />
+        </div>
+      )}
 
       <div className="mb-4">
         <h3 className="text-sm font-medium text-[#7d8590] uppercase tracking-wide mb-3">
