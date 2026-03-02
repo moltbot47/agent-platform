@@ -72,7 +72,9 @@ export default function EventExplorer() {
 
       {/* Filters */}
       <div className="flex gap-3 mb-4">
+        <label htmlFor="event-type-filter" className="sr-only">Filter by event type</label>
         <select
+          id="event-type-filter"
           value={eventType}
           onChange={(e) => { setEventType(e.target.value); setOffset(0) }}
           className="bg-[#0d1117] border border-[#21262d] rounded px-3 py-1.5 text-sm text-[#e6edf3] focus:border-[#388bfd] focus:outline-none"
@@ -81,7 +83,9 @@ export default function EventExplorer() {
             <option key={t.value} value={t.value}>{t.label}</option>
           ))}
         </select>
+        <label htmlFor="outcome-filter" className="sr-only">Filter by outcome</label>
         <select
+          id="outcome-filter"
           value={outcome}
           onChange={(e) => { setOutcome(e.target.value); setOffset(0) }}
           className="bg-[#0d1117] border border-[#21262d] rounded px-3 py-1.5 text-sm text-[#e6edf3] focus:border-[#388bfd] focus:outline-none"
@@ -93,8 +97,8 @@ export default function EventExplorer() {
       </div>
 
       {/* Events Table */}
-      <div className="bg-[#0d1117] border border-[#21262d] rounded-lg overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-[#0d1117] border border-[#21262d] rounded-lg overflow-hidden" role="region" aria-label="Events table">
+        <table className="w-full text-sm" aria-label="Agent events">
           <thead>
             <tr className="border-b border-[#21262d] text-[#7d8590] text-xs uppercase tracking-wide">
               <th className="text-left px-4 py-3">Time</th>

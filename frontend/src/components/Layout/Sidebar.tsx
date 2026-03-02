@@ -19,21 +19,22 @@ export default function Sidebar() {
         <p className="text-[10px] text-[#7d8590] mt-0.5">Observability + Ownership</p>
       </div>
 
-      <nav className="flex-1 px-2 py-3 space-y-0.5">
+      <nav className="flex-1 px-2 py-3 space-y-0.5" aria-label="Main navigation">
         {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === '/'}
+            aria-label={item.label}
             className={({ isActive }) =>
-              `flex items-center gap-2.5 px-3 py-2 rounded text-sm transition-colors ${
+              `flex items-center gap-2.5 px-3 py-2 rounded text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-[#58a6ff] ${
                 isActive
                   ? 'bg-[#1f6feb1a] text-[#58a6ff] font-medium'
                   : 'text-[#7d8590] hover:text-[#e6edf3] hover:bg-[#161b22]'
               }`
             }
           >
-            <span className="text-xs w-4 text-center">{item.icon}</span>
+            <span className="text-xs w-4 text-center" aria-hidden="true">{item.icon}</span>
             {item.label}
           </NavLink>
         ))}

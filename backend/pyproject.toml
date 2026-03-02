@@ -1,0 +1,60 @@
+[project]
+name = "agent-platform"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+# ---------- Ruff ----------
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "S",    # flake8-bandit (security)
+    "SIM",  # flake8-simplify
+]
+ignore = [
+    "S101",  # allow assert in tests
+    "S105",  # allow hardcoded passwords in tests
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["agent_platform", "agents", "bridge", "core", "events"]
+
+# ---------- Coverage ----------
+[tool.coverage.run]
+source = ["agent_platform", "agents", "bridge", "core", "events"]
+omit = [
+    "*/migrations/*",
+    "*/tests/*",
+    "*/test_*",
+    "manage.py",
+    "*/asgi.py",
+    "*/wsgi.py",
+]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+    "raise NotImplementedError",
+]
+
+# ---------- Pytest ----------
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "agent_platform.settings"
+python_files = ["tests.py", "test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--tb=short -q"

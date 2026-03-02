@@ -13,6 +13,7 @@ FROM python:3.12-slim AS production
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV DJANGO_SETTINGS_MODULE=agent_platform.settings
+ENV STATIC_ROOT=/app/staticfiles
 
 WORKDIR /app
 
@@ -31,12 +32,13 @@ COPY backend/ ./
 # Copy built frontend into Django static directory
 COPY --from=frontend-build /app/frontend/dist ./frontend_dist
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
+# Create staticfiles directory and collect static files
+RUN mkdir -p /app/staticfiles \
+    && python manage.py collectstatic --noinput
 
-# Create non-root user
+# Create non-root user and set ownership
 RUN adduser --disabled-password --gecos '' appuser
-RUN chown -R appuser:appuser /app
+RUN chown -R appuser:appuser /app /app/staticfiles
 USER appuser
 
 EXPOSE 8000

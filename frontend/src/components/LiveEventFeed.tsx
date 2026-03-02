@@ -69,6 +69,7 @@ export default function LiveEventFeed({ agentId, maxVisible = 25 }: Props) {
           {events.length > 0 && (
             <button
               onClick={clearEvents}
+              aria-label="Clear all events"
               className="text-xs text-[#484f58] hover:text-[#7d8590] transition-colors"
             >
               Clear
@@ -111,7 +112,7 @@ function EventRow({ event }: { event: AgentEvent }) {
 
   return (
     <div className="flex items-center gap-3 px-4 py-2 hover:bg-[#161b22] transition-colors">
-      <span className="text-sm w-5 text-center">{icon}</span>
+      <span className="text-sm w-5 text-center" aria-hidden="true">{icon}</span>
       <span className="text-xs font-mono text-[#484f58] w-16 shrink-0">{time}</span>
       <span className="text-xs text-[#7d8590] truncate flex-1">
         <span className="text-[#e6edf3] font-medium">{event.agent_name}</span>

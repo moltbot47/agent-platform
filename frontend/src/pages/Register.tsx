@@ -300,7 +300,7 @@ client.emit("prediction", instrument="BTC-USD", payload={
             </div>
 
             {registerMutation.error && (
-              <div className="bg-[#0d1117] border border-[#f85149] rounded-lg p-3 text-sm text-[#f85149]">
+              <div role="alert" className="bg-[#0d1117] border border-[#f85149] rounded-lg p-3 text-sm text-[#f85149]">
                 Registration failed. {(registerMutation.error as Error).message}
               </div>
             )}

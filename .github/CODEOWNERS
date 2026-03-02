@@ -1,0 +1,16 @@
+# Default owner for everything
+* @moltbot47
+
+# Backend
+/backend/ @moltbot47
+/backend/core/ @moltbot47
+
+# Frontend
+/frontend/ @moltbot47
+
+# Infrastructure
+/deploy/ @moltbot47
+/.github/ @moltbot47
+
+# SDK
+/sdk/ @moltbot47

@@ -1,6 +1,31 @@
 version: "3.9"
 
 services:
+  # --- Database migrations (runs once before backend) ---
+  init:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      - DJANGO_DEBUG=False
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - CHANNEL_LAYER_BACKEND=channels_redis.core.RedisChannelLayer
+      - REDIS_URL=redis://redis:6379/0
+    volumes:
+      - backend_data:/app/data
+      - backend_db:/app/db
+      - static_files:/app/staticfiles
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    command: ["python", "manage.py", "migrate", "--noinput"]
+    restart: "no"
+
   # --- Backend + ASGI (Daphne) ---
   backend:
     build:
@@ -12,7 +37,8 @@ services:
       - ../.env
     environment:
       - DJANGO_DEBUG=False
-      - ALLOWED_HOSTS=localhost,127.0.0.1,agents.yourdomain.com
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
       - CHANNEL_LAYER_BACKEND=channels_redis.core.RedisChannelLayer
       - REDIS_URL=redis://redis:6379/0
     volumes:
@@ -20,6 +46,8 @@ services:
       - backend_db:/app/db
       - static_files:/app/staticfiles
     depends_on:
+      init:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       db:
