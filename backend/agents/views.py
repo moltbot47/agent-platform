@@ -6,7 +6,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from core.permissions import IsAgentOwner
+from core.permissions import IsAgentAuthenticated, IsAgentOwner
 from core.posthog_client import capture as posthog_capture, identify as posthog_identify
 
 from .models import Agent, AgentLicense
@@ -148,6 +148,21 @@ class AgentLicenseListView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         agent = generics.get_object_or_404(Agent, pk=self.kwargs["pk"])
         serializer.save(agent=agent)
+
+
+class AgentHeartbeatView(APIView):
+    """Agent heartbeat ping — marks the agent as online."""
+
+    permission_classes = [IsAgentAuthenticated]
+
+    def post(self, request):
+        api_key = request.auth
+        agent = api_key.agent
+        agent.record_heartbeat()
+
+        posthog_capture(str(agent.id), "agent_heartbeat")
+
+        return Response({"status": "ok", "agent": agent.name}, status=status.HTTP_200_OK)
 
 
 class MarketplaceView(generics.ListAPIView):
