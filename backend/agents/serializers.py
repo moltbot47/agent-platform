@@ -21,8 +21,9 @@ class AgentLicenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgentLicense
         fields = [
-            "id", "license_type", "is_exclusive", "monthly_fee_usd",
-            "terms", "created_at",
+            "id", "license_type", "licensee_name", "monthly_fee",
+            "revenue_share_pct", "start_date", "end_date", "is_active",
+            "created_at",
         ]
         read_only_fields = ["id", "created_at"]
 

@@ -24,23 +24,25 @@ def _get_client():
     with _init_lock:
         if _initialized:
             return _posthog
+
+        api_key = getattr(settings, "POSTHOG_API_KEY", "")
+        if not api_key:
+            logger.info("PostHog API key not configured — analytics disabled.")
+            _initialized = True
+            return None
+
+        try:
+            import posthog
+
+            posthog.project_api_key = api_key
+            posthog.host = getattr(settings, "POSTHOG_HOST", "https://us.i.posthog.com")
+            posthog.debug = getattr(settings, "DEBUG", False)
+            _posthog = posthog
+            logger.info("PostHog initialized (host=%s)", posthog.host)
+        except ImportError:
+            logger.warning("posthog package not installed — analytics disabled.")
+
         _initialized = True
-
-    api_key = getattr(settings, "POSTHOG_API_KEY", "")
-    if not api_key:
-        logger.info("PostHog API key not configured — analytics disabled.")
-        return None
-
-    try:
-        import posthog
-
-        posthog.project_api_key = api_key
-        posthog.host = getattr(settings, "POSTHOG_HOST", "https://us.i.posthog.com")
-        posthog.debug = getattr(settings, "DEBUG", False)
-        _posthog = posthog
-        logger.info("PostHog initialized (host=%s)", posthog.host)
-    except ImportError:
-        logger.warning("posthog package not installed — analytics disabled.")
     return _posthog
 
 

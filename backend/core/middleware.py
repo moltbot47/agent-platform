@@ -14,13 +14,50 @@ control format and verbosity.
 
 import json
 import logging
+import threading
 import time
 import uuid
+from collections import defaultdict
 from typing import Callable
 
 from django.http import HttpRequest, HttpResponse
 
 logger = logging.getLogger("agent_platform.requests")
+
+
+class RequestMetrics:
+    """Thread-safe in-process request metrics collector."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self.total_requests = 0
+        self.status_counts: dict[int, int] = defaultdict(int)
+        self.method_counts: dict[str, int] = defaultdict(int)
+        self.total_duration_ms = 0.0
+        self._start_time = time.monotonic()
+
+    def record(self, method: str, status: int, duration_ms: float) -> None:
+        with self._lock:
+            self.total_requests += 1
+            self.status_counts[status] += 1
+            self.method_counts[method] += 1
+            self.total_duration_ms += duration_ms
+
+    def snapshot(self) -> dict:
+        with self._lock:
+            uptime_s = round(time.monotonic() - self._start_time, 1)
+            avg_ms = round(self.total_duration_ms / self.total_requests, 2) if self.total_requests else 0
+            return {
+                "total_requests": self.total_requests,
+                "avg_duration_ms": avg_ms,
+                "uptime_seconds": uptime_s,
+                "by_status": dict(self.status_counts),
+                "by_method": dict(self.method_counts),
+            }
+
+
+# Module-level singleton — shared across all requests in this process
+request_metrics = RequestMetrics()
 
 
 class RequestLoggingMiddleware:
@@ -69,6 +106,9 @@ class RequestLoggingMiddleware:
             "remote_addr": self._get_client_ip(request),
             "user_agent": request.META.get("HTTP_USER_AGENT", ""),
         }
+
+        # --- Record metrics ---
+        request_metrics.record(request.method, response.status_code, duration_ms)
 
         # --- Choose log level by status code ---
         if response.status_code >= 500:

@@ -32,7 +32,6 @@ export const mockAgentDetail: AgentDetail = {
   is_online: true,
   ownership: {
     creator_name: 'Durayveon',
-    creator_email: 'test@example.com',
     creator_url: 'https://github.com/moltbot47',
     revenue_share_pct: 10,
     chain_verified: false,
@@ -48,7 +47,7 @@ export const mockAgentDetail: AgentDetail = {
     consistency_score: 65,
     total_decisions: 500,
     total_trades: 187,
-    win_rate: 56.7,
+    win_rate: 0.567,
     profit_factor: 1.61,
     sharpe_ratio: 1.2,
     max_drawdown_pct: 5.0,

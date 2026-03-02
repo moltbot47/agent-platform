@@ -245,14 +245,15 @@ class Command(BaseCommand):
             self.stdout.write(f"Deleted {deleted} existing objects.")
 
         created_count = 0
-        for agent_data in SEED_AGENTS:
-            name = agent_data["name"]
+        for seed_entry in SEED_AGENTS:
+            name = seed_entry["name"]
             if Agent.objects.filter(name=name).exists():
                 self.stdout.write(self.style.WARNING(f"  skip: {name} (already exists)"))
                 continue
 
-            ownership_data = agent_data.pop("ownership")
-            reputation_data = agent_data.pop("reputation")
+            agent_data = {k: v for k, v in seed_entry.items() if k not in ("ownership", "reputation")}
+            ownership_data = seed_entry["ownership"]
+            reputation_data = seed_entry["reputation"]
 
             agent = Agent.objects.create(**agent_data)
 

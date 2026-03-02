@@ -14,5 +14,6 @@ urlpatterns = [
     path("agents/<uuid:pk>/ownership/", views.AgentOwnershipView.as_view(), name="agent-ownership"),
     path("agents/<uuid:pk>/licenses/", views.AgentLicenseListView.as_view(), name="agent-licenses"),
     path("agents/<uuid:pk>/heartbeat/", views.AgentHeartbeatView.as_view(), name="agent-heartbeat"),
+    path("heartbeat/", views.AgentHeartbeatView.as_view(), name="heartbeat"),
     path("marketplace/", views.MarketplaceView.as_view(), name="marketplace"),
 ]

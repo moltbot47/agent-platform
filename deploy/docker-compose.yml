@@ -12,6 +12,12 @@ services:
       - DJANGO_DEBUG=False
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=agent_platform
+      - DB_USER=postgres
+      - DB_PASSWORD=${DB_PASSWORD:-agent_platform_secret}
+      - DB_HOST=db
+      - DB_PORT=5432
       - CHANNEL_LAYER_BACKEND=channels_redis.core.RedisChannelLayer
       - REDIS_URL=redis://redis:6379/0
     volumes:
@@ -39,6 +45,12 @@ services:
       - DJANGO_DEBUG=False
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY must be set}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - DB_ENGINE=django.db.backends.postgresql
+      - DB_NAME=agent_platform
+      - DB_USER=postgres
+      - DB_PASSWORD=${DB_PASSWORD:-agent_platform_secret}
+      - DB_HOST=db
+      - DB_PORT=5432
       - CHANNEL_LAYER_BACKEND=channels_redis.core.RedisChannelLayer
       - REDIS_URL=redis://redis:6379/0
     volumes:

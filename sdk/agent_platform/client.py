@@ -134,7 +134,17 @@ class AgentClient:
         Returns:
             Response data.
         """
-        return self.emit("heartbeat")
+        try:
+            response = self._session.post(
+                f"{self.base_url}/api/v1/heartbeat/",
+                json={},
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            logger.error("Failed to send heartbeat: %s", exc)
+            raise
 
     def pipeline(
         self,

@@ -20,6 +20,11 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
 
+# Railway provides RAILWAY_PUBLIC_DOMAIN
+_railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
+if _railway_domain:
+    ALLOWED_HOSTS.append(_railway_domain)
+
 # Guard against running with insecure defaults in production
 if not DEBUG and SECRET_KEY.startswith("django-insecure"):
     raise ImproperlyConfigured(
@@ -49,6 +54,7 @@ INSTALLED_APPS = [
 # --- Middleware ---
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "core.middleware.RequestLoggingMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -98,16 +104,22 @@ CHANNEL_LAYERS = {
 }
 
 # --- Database ---
-DATABASES = {
-    "default": {
-        "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.sqlite3"),
-        "NAME": os.environ.get("DB_NAME", str(BASE_DIR / "db.sqlite3")),
-        "USER": os.environ.get("DB_USER", ""),
-        "PASSWORD": os.environ.get("DB_PASSWORD", ""),
-        "HOST": os.environ.get("DB_HOST", ""),
-        "PORT": os.environ.get("DB_PORT", ""),
+import dj_database_url
+
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if DATABASE_URL:
+    DATABASES = {"default": dj_database_url.parse(DATABASE_URL)}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": os.environ.get("DB_ENGINE", "django.db.backends.sqlite3"),
+            "NAME": os.environ.get("DB_NAME", str(BASE_DIR / "db.sqlite3")),
+            "USER": os.environ.get("DB_USER", ""),
+            "PASSWORD": os.environ.get("DB_PASSWORD", ""),
+            "HOST": os.environ.get("DB_HOST", ""),
+            "PORT": os.environ.get("DB_PORT", ""),
+        }
     }
-}
 
 # --- Auth ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -133,7 +145,14 @@ CORS_ALLOWED_ORIGINS = os.environ.get(
     "CORS_ALLOWED_ORIGINS",
     "http://localhost:5173,http://127.0.0.1:5173",
 ).split(",")
+if _railway_domain:
+    CORS_ALLOWED_ORIGINS.append(f"https://{_railway_domain}")
 CORS_ALLOW_CREDENTIALS = True
+
+# CSRF trusted origins (needed for Railway domain)
+CSRF_TRUSTED_ORIGINS = []
+if _railway_domain:
+    CSRF_TRUSTED_ORIGINS.append(f"https://{_railway_domain}")
 
 # --- Django REST Framework ---
 REST_FRAMEWORK = {
@@ -218,6 +237,19 @@ LOGGING = {
         "level": LOG_LEVEL,
     },
 }
+
+# --- Sentry error tracking ---
+SENTRY_DSN = os.environ.get("SENTRY_DSN", "")
+if SENTRY_DSN:
+    import sentry_sdk
+
+    sentry_sdk.init(
+        dsn=SENTRY_DSN,
+        traces_sample_rate=float(os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+        profiles_sample_rate=float(os.environ.get("SENTRY_PROFILES_SAMPLE_RATE", "0.1")),
+        environment=os.environ.get("SENTRY_ENVIRONMENT", "development"),
+        send_default_pii=False,
+    )
 
 # --- Bridge (paths to LaT-PFN data) ---
 TRADING_SYSTEM_DIR = os.environ.get(

@@ -63,7 +63,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           cd backend
-          coverage run --source='.' manage.py test -v2
+          coverage run manage.py test -v2
           coverage report --fail-under=80
           coverage xml -o coverage.xml
 

@@ -123,7 +123,8 @@ class AgentReputationView(generics.RetrieveAPIView):
         instance = self.get_object()
         if instance is None:
             return Response({"detail": "No reputation data yet."}, status=404)
-        return super().retrieve(request, *args, **kwargs)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class AgentOwnershipView(generics.RetrieveAPIView):
@@ -140,7 +141,8 @@ class AgentOwnershipView(generics.RetrieveAPIView):
         instance = self.get_object()
         if instance is None:
             return Response({"detail": "No ownership data."}, status=404)
-        return super().retrieve(request, *args, **kwargs)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class AgentLicenseListView(generics.ListCreateAPIView):
@@ -171,9 +173,17 @@ class AgentHeartbeatView(APIView):
 
     permission_classes = [IsAgentAuthenticated]
 
-    def post(self, request):
+    def post(self, request, pk=None):
         api_key = request.auth
         agent = api_key.agent
+
+        # Verify the authenticated agent matches the URL pk
+        if pk is not None and str(agent.id) != str(pk):
+            return Response(
+                {"detail": "API key does not match this agent."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         agent.record_heartbeat()
 
         posthog_capture(str(agent.id), "agent_heartbeat")

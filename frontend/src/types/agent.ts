@@ -35,7 +35,6 @@ export interface AgentListItem {
 
 export interface AgentOwnership {
   creator_name: string
-  creator_email: string
   creator_url: string
   revenue_share_pct: number
   chain_verified: boolean
