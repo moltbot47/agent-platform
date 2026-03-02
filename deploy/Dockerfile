@@ -47,4 +47,4 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/')" || exit 1
 
 # Start script: migrate, seed, then run Daphne
-CMD ["sh", "-c", "python manage.py migrate --noinput && python manage.py seed_agents 2>/dev/null; daphne -b 0.0.0.0 -p ${PORT:-8000} agent_platform.asgi:application"]
+CMD ["sh", "-c", "echo 'Starting on port ${PORT:-8000}...' && python manage.py migrate --noinput && python manage.py seed_agents 2>/dev/null; exec daphne -b 0.0.0.0 -p ${PORT:-8000} agent_platform.asgi:application"]
