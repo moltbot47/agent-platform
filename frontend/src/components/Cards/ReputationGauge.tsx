@@ -16,26 +16,24 @@ export default function ReputationGauge({ score, size = 'md' }: Props) {
   const progress = (score / 100) * circumference
   const offset = circumference - progress
 
-  // Color based on score
-  let color = '#f85149' // red
-  if (score >= 70) color = '#3fb950' // green
-  else if (score >= 50) color = '#d29922' // yellow
-  else if (score >= 30) color = '#f0883e' // orange
+  // PostHog color scale
+  let color = '#F54E00' // danger red-orange
+  if (score >= 70) color = '#77B96C' // success green
+  else if (score >= 50) color = '#F1A82C' // warning amber
+  else if (score >= 30) color = '#F7A501' // orange
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: outer, height: outer }}>
       <svg width={outer} height={outer} className="-rotate-90" role="img" aria-label={`Reputation score: ${score} out of 100`}>
         <title>Reputation: {score}/100</title>
-        {/* Background circle */}
         <circle
           cx={outer / 2}
           cy={outer / 2}
           r={radius}
           fill="none"
-          stroke="#21262d"
+          stroke="#2C2E38"
           strokeWidth={stroke}
         />
-        {/* Progress circle */}
         <circle
           cx={outer / 2}
           cy={outer / 2}

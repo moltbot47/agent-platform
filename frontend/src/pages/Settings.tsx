@@ -6,43 +6,43 @@ export default function Settings() {
       <Header title="Settings" subtitle="Platform configuration" />
 
       <div className="max-w-xl space-y-6">
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4">
-          <h3 className="text-sm font-medium text-[#7d8590] mb-3 uppercase tracking-wide">
+        <div className="bg-[#22242C] border border-[#2C2E38] rounded-xl p-5">
+          <h3 className="text-sm font-medium text-[#9B9EA3] mb-4 uppercase tracking-wider">
             PostHog
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <label className="block text-xs text-[#484f58] mb-1">Project API Key</label>
+              <label className="block text-xs text-[#6B6F76] mb-1.5 font-medium">Project API Key</label>
               <input
                 type="text"
                 disabled
                 placeholder="Configure in .env"
-                className="w-full bg-[#161b22] border border-[#21262d] rounded px-3 py-2 text-sm text-[#484f58] cursor-not-allowed"
+                className="w-full bg-[#1D1F27] border border-[#2C2E38] rounded-lg px-3 py-2.5 text-sm text-[#6B6F76] cursor-not-allowed"
               />
             </div>
             <div>
-              <label className="block text-xs text-[#484f58] mb-1">Host</label>
+              <label className="block text-xs text-[#6B6F76] mb-1.5 font-medium">Host</label>
               <input
                 type="text"
                 disabled
                 placeholder="https://us.posthog.com"
-                className="w-full bg-[#161b22] border border-[#21262d] rounded px-3 py-2 text-sm text-[#484f58] cursor-not-allowed"
+                className="w-full bg-[#1D1F27] border border-[#2C2E38] rounded-lg px-3 py-2.5 text-sm text-[#6B6F76] cursor-not-allowed"
               />
             </div>
           </div>
         </div>
 
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4">
-          <h3 className="text-sm font-medium text-[#7d8590] mb-3 uppercase tracking-wide">
+        <div className="bg-[#22242C] border border-[#2C2E38] rounded-xl p-5">
+          <h3 className="text-sm font-medium text-[#9B9EA3] mb-4 uppercase tracking-wider">
             API
           </h3>
-          <p className="text-xs text-[#484f58]">
+          <p className="text-xs text-[#6B6F76]">
             Backend running at{' '}
-            <span className="font-mono text-[#7d8590]">{window.location.hostname}:8000</span>
+            <span className="font-mono text-[#9B9EA3]">{window.location.hostname}:8000</span>
           </p>
-          <p className="text-xs text-[#484f58] mt-1">
+          <p className="text-xs text-[#6B6F76] mt-2">
             API docs at{' '}
-            <a href="/api/docs/" className="text-[#58a6ff] hover:underline">
+            <a href="/api/docs/" className="text-[#1D4AFF] hover:text-[#5E8AFF] transition-colors">
               /api/docs/
             </a>
           </p>

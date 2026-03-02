@@ -28,10 +28,10 @@ export default function AgentRegistry() {
           <button
             key={opt.value}
             onClick={() => setTypeFilter(opt.value)}
-            className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+            className={`text-xs px-3 py-1.5 rounded-lg border transition-all ${
               typeFilter === opt.value
-                ? 'bg-[#1f6feb] border-[#1f6feb] text-white'
-                : 'border-[#21262d] text-[#7d8590] hover:text-[#e6edf3] hover:border-[#388bfd]'
+                ? 'bg-[#1D4AFF] border-[#1D4AFF] text-white'
+                : 'border-[#2C2E38] text-[#9B9EA3] hover:text-[#EEEEEE] hover:border-[#1D4AFF]/50'
             }`}
           >
             {opt.label}
@@ -40,7 +40,7 @@ export default function AgentRegistry() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-[#484f58]">Loading agents...</p>
+        <p className="text-sm text-[#6B6F76]">Loading agents...</p>
       ) : agents && agents.length > 0 ? (
         <div className="grid grid-cols-3 gap-4">
           {agents.map((agent) => (
@@ -48,7 +48,7 @@ export default function AgentRegistry() {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-[#484f58]">No agents found.</p>
+        <p className="text-sm text-[#6B6F76]">No agents found.</p>
       )}
     </div>
   )

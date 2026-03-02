@@ -6,37 +6,37 @@ interface AgentCardProps {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  trading: 'bg-[#1f6feb]',
-  prediction: 'bg-[#a371f7]',
-  orchestrator: 'bg-[#f0883e]',
-  monitor: 'bg-[#3fb950]',
-  custom: 'bg-[#7d8590]',
+  trading: 'bg-[#1D4AFF]',
+  prediction: 'bg-[#B062FF]',
+  orchestrator: 'bg-[#F54E00]',
+  monitor: 'bg-[#77B96C]',
+  custom: 'bg-[#6B6F76]',
 }
 
 export default function AgentCard({ agent }: AgentCardProps) {
   return (
     <Link
       to={`/agents/${agent.id}`}
-      className="block bg-[#0d1117] border border-[#21262d] rounded-lg p-4 hover:border-[#388bfd] transition-colors"
+      className="block bg-[#22242C] border border-[#2C2E38] rounded-xl p-5 hover:border-[#1D4AFF]/50 hover:bg-[#22242C]/80 transition-all"
     >
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <span
-            className={`w-2 h-2 rounded-full ${agent.is_online ? 'bg-[#3fb950]' : 'bg-[#484f58]'}`}
+            className={`w-2.5 h-2.5 rounded-full ${agent.is_online ? 'bg-[#77B96C] shadow-[0_0_6px_rgba(119,185,108,0.4)]' : 'bg-[#6B6F76]'}`}
           />
-          <span className="text-sm font-medium text-[#e6edf3]">{agent.display_name}</span>
+          <span className="text-sm font-medium text-[#EEEEEE]">{agent.display_name}</span>
         </div>
         <span
-          className={`text-[10px] px-1.5 py-0.5 rounded text-white ${TYPE_COLORS[agent.agent_type] ?? TYPE_COLORS.custom}`}
+          className={`text-[10px] px-2 py-0.5 rounded-md text-white font-medium ${TYPE_COLORS[agent.agent_type] ?? TYPE_COLORS.custom}`}
         >
           {agent.agent_type}
         </span>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-[#7d8590]">
+      <div className="flex items-center justify-between text-xs text-[#9B9EA3]">
         <span>{agent.owner ?? 'Unknown creator'}</span>
         {agent.reputation_score != null && (
-          <span className="font-mono text-[#e6edf3]">{agent.reputation_score}/100</span>
+          <span className="font-mono text-[#EEEEEE] bg-[#2C2E38] px-2 py-0.5 rounded-md">{agent.reputation_score}/100</span>
         )}
       </div>
     </Link>

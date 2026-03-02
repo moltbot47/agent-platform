@@ -26,23 +26,23 @@ const OUTCOMES: { value: string; label: string }[] = [
 ]
 
 const OUTCOME_COLORS: Record<EventOutcome, string> = {
-  pass: 'bg-[#238636] text-white',
-  block: 'bg-[#da3633] text-white',
-  modify: 'bg-[#d29922] text-white',
-  win: 'bg-[#3fb950] text-white',
-  loss: 'bg-[#f85149] text-white',
-  pending: 'bg-[#484f58] text-[#e6edf3]',
-  error: 'bg-[#da3633] text-white',
+  pass: 'bg-[#4B7A3E] text-white',
+  block: 'bg-[#DF4313] text-white',
+  modify: 'bg-[#F1A82C] text-white',
+  win: 'bg-[#77B96C] text-white',
+  loss: 'bg-[#F54E00] text-white',
+  pending: 'bg-[#3C3E48] text-[#EEEEEE]',
+  error: 'bg-[#DF4313] text-white',
 }
 
 const TYPE_COLORS: Partial<Record<EventType, string>> = {
-  execution: 'text-[#a371f7]',
-  resolution: 'text-[#f0883e]',
-  trade: 'text-[#a371f7]',
-  edge_gate: 'text-[#f85149]',
-  market_lean: 'text-[#58a6ff]',
-  momentum: 'text-[#3fb950]',
-  signal: 'text-[#58a6ff]',
+  execution: 'text-[#B062FF]',
+  resolution: 'text-[#F7A501]',
+  trade: 'text-[#B062FF]',
+  edge_gate: 'text-[#F54E00]',
+  market_lean: 'text-[#5E8AFF]',
+  momentum: 'text-[#77B96C]',
+  signal: 'text-[#5E8AFF]',
 }
 
 export default function EventExplorer() {
@@ -71,13 +71,13 @@ export default function EventExplorer() {
       />
 
       {/* Filters */}
-      <div className="flex gap-3 mb-4">
+      <div className="flex gap-3 mb-5">
         <label htmlFor="event-type-filter" className="sr-only">Filter by event type</label>
         <select
           id="event-type-filter"
           value={eventType}
           onChange={(e) => { setEventType(e.target.value); setOffset(0) }}
-          className="bg-[#0d1117] border border-[#21262d] rounded px-3 py-1.5 text-sm text-[#e6edf3] focus:border-[#388bfd] focus:outline-none"
+          className="bg-[#22242C] border border-[#2C2E38] rounded-lg px-3 py-1.5 text-sm text-[#EEEEEE] focus:border-[#1D4AFF] focus:outline-none"
         >
           {EVENT_TYPES.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
@@ -88,7 +88,7 @@ export default function EventExplorer() {
           id="outcome-filter"
           value={outcome}
           onChange={(e) => { setOutcome(e.target.value); setOffset(0) }}
-          className="bg-[#0d1117] border border-[#21262d] rounded px-3 py-1.5 text-sm text-[#e6edf3] focus:border-[#388bfd] focus:outline-none"
+          className="bg-[#22242C] border border-[#2C2E38] rounded-lg px-3 py-1.5 text-sm text-[#EEEEEE] focus:border-[#1D4AFF] focus:outline-none"
         >
           {OUTCOMES.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -97,29 +97,29 @@ export default function EventExplorer() {
       </div>
 
       {/* Events Table */}
-      <div className="bg-[#0d1117] border border-[#21262d] rounded-lg overflow-hidden" role="region" aria-label="Events table">
+      <div className="bg-[#22242C] border border-[#2C2E38] rounded-xl overflow-hidden" role="region" aria-label="Events table">
         <table className="w-full text-sm" aria-label="Agent events">
           <thead>
-            <tr className="border-b border-[#21262d] text-[#7d8590] text-xs uppercase tracking-wide">
-              <th className="text-left px-4 py-3">Time</th>
-              <th className="text-left px-4 py-3">Agent</th>
-              <th className="text-left px-4 py-3">Type</th>
-              <th className="text-left px-4 py-3">Instrument</th>
-              <th className="text-left px-4 py-3">Outcome</th>
-              <th className="text-right px-4 py-3">Confidence</th>
-              <th className="text-left px-4 py-3">Details</th>
+            <tr className="border-b border-[#2C2E38] text-[#9B9EA3] text-xs uppercase tracking-wider">
+              <th className="text-left px-4 py-3 font-medium">Time</th>
+              <th className="text-left px-4 py-3 font-medium">Agent</th>
+              <th className="text-left px-4 py-3 font-medium">Type</th>
+              <th className="text-left px-4 py-3 font-medium">Instrument</th>
+              <th className="text-left px-4 py-3 font-medium">Outcome</th>
+              <th className="text-right px-4 py-3 font-medium">Confidence</th>
+              <th className="text-left px-4 py-3 font-medium">Details</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-[#484f58]">
+                <td colSpan={7} className="px-4 py-10 text-center text-[#6B6F76]">
                   Loading events...
                 </td>
               </tr>
             ) : events.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-[#484f58]">
+                <td colSpan={7} className="px-4 py-10 text-center text-[#6B6F76]">
                   No events found. Run bridge sync to populate.
                 </td>
               </tr>
@@ -127,9 +127,9 @@ export default function EventExplorer() {
               events.map((event) => (
                 <tr
                   key={event.id}
-                  className="border-b border-[#21262d] hover:bg-[#161b22] transition-colors"
+                  className="border-b border-[#2C2E38] hover:bg-[#2C2E38]/50 transition-colors"
                 >
-                  <td className="px-4 py-2.5 font-mono text-xs text-[#7d8590] whitespace-nowrap">
+                  <td className="px-4 py-3 font-mono text-xs text-[#9B9EA3] whitespace-nowrap">
                     {new Date(event.timestamp).toLocaleString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -138,24 +138,24 @@ export default function EventExplorer() {
                       second: '2-digit',
                     })}
                   </td>
-                  <td className="px-4 py-2.5 text-[#e6edf3]">
+                  <td className="px-4 py-3 text-[#EEEEEE]">
                     {event.agent_name}
                   </td>
-                  <td className={`px-4 py-2.5 font-mono text-xs ${TYPE_COLORS[event.event_type] ?? 'text-[#7d8590]'}`}>
+                  <td className={`px-4 py-3 font-mono text-xs ${TYPE_COLORS[event.event_type] ?? 'text-[#9B9EA3]'}`}>
                     {event.event_type}
                   </td>
-                  <td className="px-4 py-2.5 text-[#e6edf3] font-mono text-xs">
+                  <td className="px-4 py-3 text-[#EEEEEE] font-mono text-xs">
                     {event.instrument || '—'}
                   </td>
-                  <td className="px-4 py-2.5">
-                    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${OUTCOME_COLORS[event.outcome]}`}>
+                  <td className="px-4 py-3">
+                    <span className={`inline-block px-2 py-0.5 rounded-md text-xs font-medium ${OUTCOME_COLORS[event.outcome]}`}>
                       {event.outcome}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 text-right font-mono text-xs text-[#7d8590]">
+                  <td className="px-4 py-3 text-right font-mono text-xs text-[#9B9EA3]">
                     {event.confidence != null ? `${(event.confidence * 100).toFixed(1)}%` : '—'}
                   </td>
-                  <td className="px-4 py-2.5 text-xs text-[#484f58] max-w-xs truncate">
+                  <td className="px-4 py-3 text-xs text-[#6B6F76] max-w-xs truncate">
                     {summarizePayload(event.payload)}
                   </td>
                 </tr>
@@ -167,22 +167,22 @@ export default function EventExplorer() {
 
       {/* Pagination */}
       {totalCount > limit && (
-        <div className="flex items-center justify-between mt-4">
-          <p className="text-xs text-[#484f58]">
+        <div className="flex items-center justify-between mt-5">
+          <p className="text-xs text-[#6B6F76]">
             Showing {offset + 1}–{Math.min(offset + limit, totalCount)} of {totalCount.toLocaleString()}
           </p>
           <div className="flex gap-2">
             <button
               onClick={() => setOffset(Math.max(0, offset - limit))}
               disabled={!hasPrev}
-              className="text-xs px-3 py-1.5 rounded border border-[#21262d] text-[#7d8590] hover:text-[#e6edf3] hover:border-[#388bfd] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="text-xs px-3 py-1.5 rounded-lg border border-[#2C2E38] text-[#9B9EA3] hover:text-[#EEEEEE] hover:border-[#1D4AFF]/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Previous
             </button>
             <button
               onClick={() => setOffset(offset + limit)}
               disabled={!hasNext}
-              className="text-xs px-3 py-1.5 rounded border border-[#21262d] text-[#7d8590] hover:text-[#e6edf3] hover:border-[#388bfd] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="text-xs px-3 py-1.5 rounded-lg border border-[#2C2E38] text-[#9B9EA3] hover:text-[#EEEEEE] hover:border-[#1D4AFF]/50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Next
             </button>

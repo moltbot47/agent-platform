@@ -14,8 +14,8 @@ export default function AgentDetail() {
   const { data: pnlCurve } = usePnLCurve(id ?? '')
   const { data: outcomeData } = useOutcomeByType(id ?? '')
 
-  if (isLoading) return <p className="text-sm text-[#484f58]">Loading agent...</p>
-  if (!agent) return <p className="text-sm text-[#f85149]">Agent not found.</p>
+  if (isLoading) return <p className="text-sm text-[#6B6F76]">Loading agent...</p>
+  if (!agent) return <p className="text-sm text-[#F54E00]">Agent not found.</p>
 
   const rep = agent.reputation
 
@@ -28,20 +28,20 @@ export default function AgentDetail() {
 
       <div className="flex items-center gap-3 mb-6">
         <span
-          className={`w-3 h-3 rounded-full ${agent.is_online ? 'bg-[#3fb950]' : 'bg-[#484f58]'}`}
+          className={`w-3 h-3 rounded-full ${agent.is_online ? 'bg-[#77B96C] shadow-[0_0_6px_rgba(119,185,108,0.4)]' : 'bg-[#6B6F76]'}`}
         />
-        <span className="text-sm text-[#7d8590]">
+        <span className="text-sm text-[#9B9EA3]">
           {agent.is_online ? 'Online' : 'Offline'}
         </span>
         {agent.ownership && (
-          <span className="text-sm text-[#7d8590]">
+          <span className="text-sm text-[#9B9EA3]">
             · Created by{' '}
             {agent.ownership.creator_url ? (
               <a
                 href={agent.ownership.creator_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#58a6ff] hover:underline"
+                className="text-[#1D4AFF] hover:text-[#5E8AFF] transition-colors"
               >
                 {agent.ownership.creator_name}
               </a>
@@ -56,13 +56,13 @@ export default function AgentDetail() {
       <div className="flex gap-3 mb-6">
         <Link
           to={`/agents/${id}/pipeline`}
-          className="text-xs px-3 py-1.5 rounded border border-[#21262d] text-[#58a6ff] hover:border-[#388bfd] transition-colors"
+          className="text-xs px-3 py-1.5 rounded-lg border border-[#2C2E38] text-[#1D4AFF] hover:border-[#1D4AFF]/50 transition-all"
         >
           View Pipeline Traces
         </Link>
         <Link
           to={`/events?agent=${id}`}
-          className="text-xs px-3 py-1.5 rounded border border-[#21262d] text-[#58a6ff] hover:border-[#388bfd] transition-colors"
+          className="text-xs px-3 py-1.5 rounded-lg border border-[#2C2E38] text-[#1D4AFF] hover:border-[#1D4AFF]/50 transition-all"
         >
           View Events
         </Link>
@@ -83,11 +83,11 @@ export default function AgentDetail() {
       )}
 
       {rep && (
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4 mb-6">
-          <h3 className="text-sm font-medium text-[#7d8590] mb-3 uppercase tracking-wide">
+        <div className="bg-[#22242C] border border-[#2C2E38] rounded-xl p-5 mb-6">
+          <h3 className="text-xs font-medium text-[#9B9EA3] mb-4 uppercase tracking-wider">
             Reputation Breakdown
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {[
               { label: 'Accuracy', value: rep.accuracy_score },
               { label: 'Profitability', value: rep.profitability_score },
@@ -95,14 +95,14 @@ export default function AgentDetail() {
               { label: 'Consistency', value: rep.consistency_score },
             ].map((item) => (
               <div key={item.label} className="flex items-center gap-3">
-                <span className="text-xs text-[#7d8590] w-24">{item.label}</span>
-                <div className="flex-1 h-2 bg-[#21262d] rounded-full overflow-hidden">
+                <span className="text-xs text-[#9B9EA3] w-24">{item.label}</span>
+                <div className="flex-1 h-2 bg-[#2C2E38] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#1f6feb] rounded-full transition-all"
+                    className="h-full bg-[#1D4AFF] rounded-full transition-all"
                     style={{ width: `${Math.min(item.value * 100, 100)}%` }}
                   />
                 </div>
-                <span className="text-xs font-mono text-[#e6edf3] w-12 text-right">
+                <span className="text-xs font-mono text-[#EEEEEE] w-12 text-right">
                   {(item.value * 100).toFixed(0)}%
                 </span>
               </div>
@@ -114,7 +114,7 @@ export default function AgentDetail() {
       {/* Charts */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         {calibration && calibration.calibration_curve.length > 0 && (
-          <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4">
+          <div className="bg-[#22242C] border border-[#2C2E38] rounded-xl p-5">
             <CalibrationChart
               data={calibration.calibration_curve}
               brierScore={calibration.brier_score}
@@ -122,35 +122,35 @@ export default function AgentDetail() {
           </div>
         )}
         {pnlCurve && pnlCurve.length > 0 && (
-          <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4">
+          <div className="bg-[#22242C] border border-[#2C2E38] rounded-xl p-5">
             <PnLChart data={pnlCurve} />
           </div>
         )}
       </div>
 
       {outcomeData && outcomeData.length > 0 && (
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4 mb-6">
+        <div className="bg-[#22242C] border border-[#2C2E38] rounded-xl p-5 mb-6">
           <OutcomeChart data={outcomeData} />
         </div>
       )}
 
       {agent.soul_file && (
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4 mb-6">
-          <h3 className="text-sm font-medium text-[#7d8590] mb-3 uppercase tracking-wide">
+        <div className="bg-[#22242C] border border-[#2C2E38] rounded-xl p-5 mb-6">
+          <h3 className="text-xs font-medium text-[#9B9EA3] mb-3 uppercase tracking-wider">
             Soul File
           </h3>
-          <pre className="text-xs text-[#e6edf3] whitespace-pre-wrap font-mono leading-relaxed">
+          <pre className="text-xs text-[#EEEEEE] whitespace-pre-wrap font-mono leading-relaxed">
             {agent.soul_file}
           </pre>
         </div>
       )}
 
       {agent.description && (
-        <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4">
-          <h3 className="text-sm font-medium text-[#7d8590] mb-2 uppercase tracking-wide">
+        <div className="bg-[#22242C] border border-[#2C2E38] rounded-xl p-5">
+          <h3 className="text-xs font-medium text-[#9B9EA3] mb-2 uppercase tracking-wider">
             Description
           </h3>
-          <p className="text-sm text-[#e6edf3]">{agent.description}</p>
+          <p className="text-sm text-[#EEEEEE]">{agent.description}</p>
         </div>
       )}
     </div>

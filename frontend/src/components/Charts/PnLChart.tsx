@@ -13,7 +13,7 @@ export default function PnLChart({ data }: Props) {
   const gradientId = `pnlGradient-${useId()}`
   if (data.length === 0) {
     return (
-      <div className="text-center text-sm text-[#484f58] py-8">
+      <div className="text-center text-sm text-[#6B6F76] py-8">
         No PnL data available
       </div>
     )
@@ -25,10 +25,10 @@ export default function PnLChart({ data }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium text-[#7d8590] uppercase tracking-wide">
+        <h3 className="text-xs font-medium text-[#9B9EA3] uppercase tracking-wider">
           Cumulative PnL
         </h3>
-        <span className={`text-sm font-mono ${isPositive ? 'text-[#3fb950]' : 'text-[#f85149]'}`}>
+        <span className={`text-sm font-mono ${isPositive ? 'text-[#77B96C]' : 'text-[#F54E00]'}`}>
           ${finalPnL.toFixed(2)}
         </span>
       </div>
@@ -38,33 +38,33 @@ export default function PnLChart({ data }: Props) {
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
               <stop
                 offset="5%"
-                stopColor={isPositive ? '#3fb950' : '#f85149'}
+                stopColor={isPositive ? '#77B96C' : '#F54E00'}
                 stopOpacity={0.3}
               />
               <stop
                 offset="95%"
-                stopColor={isPositive ? '#3fb950' : '#f85149'}
+                stopColor={isPositive ? '#77B96C' : '#F54E00'}
                 stopOpacity={0}
               />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="3 3" stroke="#21262d" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#2C2E38" />
           <XAxis
             dataKey="timestamp"
-            tick={{ fill: '#7d8590', fontSize: 10 }}
-            stroke="#21262d"
+            tick={{ fill: '#9B9EA3', fontSize: 10 }}
+            stroke="#2C2E38"
             tickFormatter={(v: string) => {
               const d = new Date(v)
               return `${d.getMonth() + 1}/${d.getDate()}`
             }}
           />
           <YAxis
-            tick={{ fill: '#7d8590', fontSize: 11 }}
-            stroke="#21262d"
+            tick={{ fill: '#9B9EA3', fontSize: 11 }}
+            stroke="#2C2E38"
             tickFormatter={(v: number) => `$${v}`}
           />
           <Tooltip
-            contentStyle={{ background: '#161b22', border: '1px solid #21262d', borderRadius: 6, fontSize: 12 }}
+            contentStyle={{ background: '#22242C', border: '1px solid #2C2E38', borderRadius: 8, fontSize: 12 }}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             labelFormatter={((v: any) => new Date(String(v)).toLocaleString()) as any}
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -74,11 +74,11 @@ export default function PnLChart({ data }: Props) {
               return [`$${v.toFixed(2)}`, 'Trade PnL']
             }) as any}
           />
-          <ReferenceLine y={0} stroke="#484f58" strokeDasharray="3 3" />
+          <ReferenceLine y={0} stroke="#6B6F76" strokeDasharray="3 3" />
           <Area
             type="monotone"
             dataKey="cumulative_pnl"
-            stroke={isPositive ? '#3fb950' : '#f85149'}
+            stroke={isPositive ? '#77B96C' : '#F54E00'}
             fill={`url(#${gradientId})`}
             strokeWidth={2}
           />

@@ -17,7 +17,7 @@ export default function Dashboard() {
     <div>
       <Header title="Dashboard" subtitle="Agent Platform overview" />
 
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-4 gap-5 mb-8">
         <StatCard label="Total Agents" value={agents?.length ?? 0} />
         <StatCard label="Active" value={activeCount} />
         <StatCard label="Online Now" value={onlineCount} trend={onlineCount > 0 ? 'up' : 'neutral'} />
@@ -30,7 +30,7 @@ export default function Dashboard() {
 
       {/* Event stats row */}
       {summary && summary.total_events > 0 && (
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-3 gap-5 mb-8">
           <StatCard label="Pipeline Runs" value={summary.total_pipeline_runs} />
           <StatCard
             label="Pass Rate"
@@ -47,11 +47,11 @@ export default function Dashboard() {
       {/* Two-column layout: agents + live feed */}
       <div className="grid grid-cols-3 gap-6">
         <div className="col-span-2">
-          <h3 className="text-sm font-medium text-[#7d8590] uppercase tracking-wide mb-3">
+          <h3 className="text-xs font-medium text-[#9B9EA3] uppercase tracking-wider mb-4">
             Registered Agents
           </h3>
           {isLoading ? (
-            <p className="text-sm text-[#484f58]">Loading...</p>
+            <p className="text-sm text-[#6B6F76]">Loading...</p>
           ) : agents && agents.length > 0 ? (
             <div className="grid grid-cols-2 gap-4">
               {agents.map((agent) => (
@@ -59,9 +59,9 @@ export default function Dashboard() {
               ))}
             </div>
           ) : (
-            <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-8 text-center">
-              <p className="text-[#7d8590] mb-2">No agents registered yet.</p>
-              <Link to="/register" className="text-sm text-[#58a6ff] hover:underline">
+            <div className="bg-[#22242C] border border-[#2C2E38] rounded-xl p-8 text-center">
+              <p className="text-[#9B9EA3] mb-3">No agents registered yet.</p>
+              <Link to="/register" className="text-sm text-[#1D4AFF] hover:text-[#5E8AFF] transition-colors">
                 Register your first agent
               </Link>
             </div>
@@ -69,7 +69,7 @@ export default function Dashboard() {
         </div>
 
         <div>
-          <h3 className="text-sm font-medium text-[#7d8590] uppercase tracking-wide mb-3">
+          <h3 className="text-xs font-medium text-[#9B9EA3] uppercase tracking-wider mb-4">
             Live Stream
           </h3>
           <LiveEventFeed />
