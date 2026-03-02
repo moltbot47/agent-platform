@@ -24,6 +24,7 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(","
 _railway_domain = os.environ.get("RAILWAY_PUBLIC_DOMAIN", "")
 if _railway_domain:
     ALLOWED_HOSTS.append(_railway_domain)
+    ALLOWED_HOSTS.append("healthcheck.railway.app")
 
 # Guard against running with insecure defaults in production
 if not DEBUG and SECRET_KEY.startswith("django-insecure"):
