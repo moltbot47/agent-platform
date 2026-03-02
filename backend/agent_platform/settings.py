@@ -21,6 +21,7 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(","
 
 # --- Installed Apps ---
 INSTALLED_APPS = [
+    "daphne",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -68,6 +69,18 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "agent_platform.wsgi.application"
+ASGI_APPLICATION = "agent_platform.asgi.application"
+
+# --- Django Channels ---
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": os.environ.get(
+            "CHANNEL_LAYER_BACKEND",
+            "channels.layers.InMemoryChannelLayer",
+        ),
+        "CONFIG": {},
+    }
+}
 
 # --- Database ---
 DATABASES = {

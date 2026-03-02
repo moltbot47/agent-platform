@@ -12,6 +12,7 @@ from agents.models import AgentAPIKey
 from core.permissions import IsAgentAuthenticated
 from core.posthog_client import capture as posthog_capture
 
+from .broadcast import broadcast_event, broadcast_event_batch
 from .models import AgentEvent, AgentMetric, DecisionPipelineRun
 from .calibration import get_calibration_data, get_outcome_by_type, get_pnl_curve
 from .serializers import (
@@ -53,6 +54,9 @@ class EventIngestView(APIView):
             },
         )
 
+        # Broadcast via WebSocket
+        broadcast_event(event)
+
         return Response(AgentEventSerializer(event).data, status=status.HTTP_201_CREATED)
 
 
@@ -86,6 +90,9 @@ class EventBatchIngestView(APIView):
                     "instrument": event.instrument,
                 },
             )
+
+        # Broadcast batch via WebSocket
+        broadcast_event_batch(created)
 
         return Response(
             {"created": len(created), "message": f"Ingested {len(created)} events."},
