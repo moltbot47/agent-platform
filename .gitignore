@@ -21,3 +21,8 @@ frontend/dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# SDK build artifacts
+sdk/dist/
+sdk/*.egg-info/
+sdk/build/
