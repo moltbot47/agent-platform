@@ -28,4 +28,8 @@ urlpatterns = [
     ),
     # Dashboard aggregation
     path("metrics/dashboard/", views.DashboardSummaryView.as_view(), name="dashboard-summary"),
+    # Charts + calibration
+    path("agents/<uuid:pk>/calibration/", views.CalibrationView.as_view(), name="agent-calibration"),
+    path("agents/<uuid:pk>/pnl-curve/", views.PnLCurveView.as_view(), name="agent-pnl-curve"),
+    path("agents/<uuid:pk>/outcome-by-type/", views.OutcomeByTypeView.as_view(), name="agent-outcome-by-type"),
 ]

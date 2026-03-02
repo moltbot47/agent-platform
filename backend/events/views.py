@@ -13,6 +13,7 @@ from core.permissions import IsAgentAuthenticated
 from core.posthog_client import capture as posthog_capture
 
 from .models import AgentEvent, AgentMetric, DecisionPipelineRun
+from .calibration import get_calibration_data, get_outcome_by_type, get_pnl_curve
 from .serializers import (
     AgentEventBatchSerializer,
     AgentEventIngestSerializer,
@@ -266,3 +267,35 @@ class DashboardSummaryView(APIView):
             "outcome_counts": outcome_counts,
         }
         return Response(DashboardSummarySerializer(data).data)
+
+
+class CalibrationView(APIView):
+    """Confidence calibration data for an agent."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        buckets = int(request.query_params.get("buckets", 10))
+        data = get_calibration_data(str(pk), buckets=buckets)
+        return Response(data)
+
+
+class PnLCurveView(APIView):
+    """Cumulative PnL curve for an agent."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        limit = int(request.query_params.get("limit", 500))
+        data = get_pnl_curve(str(pk), limit=limit)
+        return Response(data)
+
+
+class OutcomeByTypeView(APIView):
+    """Win/loss breakdown by event type."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        data = get_outcome_by_type(str(pk))
+        return Response(data)

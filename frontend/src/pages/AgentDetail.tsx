@@ -1,11 +1,18 @@
 import { Link, useParams } from 'react-router-dom'
 import Header from '../components/Layout/Header'
 import StatCard from '../components/Cards/StatCard'
+import CalibrationChart from '../components/Charts/CalibrationChart'
+import PnLChart from '../components/Charts/PnLChart'
+import OutcomeChart from '../components/Charts/OutcomeChart'
 import { useAgent } from '../hooks/useAgents'
+import { useCalibration, usePnLCurve, useOutcomeByType } from '../hooks/useCharts'
 
 export default function AgentDetail() {
   const { id } = useParams<{ id: string }>()
   const { data: agent, isLoading } = useAgent(id ?? '')
+  const { data: calibration } = useCalibration(id ?? '')
+  const { data: pnlCurve } = usePnLCurve(id ?? '')
+  const { data: outcomeData } = useOutcomeByType(id ?? '')
 
   if (isLoading) return <p className="text-sm text-[#484f58]">Loading agent...</p>
   if (!agent) return <p className="text-sm text-[#f85149]">Agent not found.</p>
@@ -101,6 +108,29 @@ export default function AgentDetail() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Charts */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        {calibration && calibration.calibration_curve.length > 0 && (
+          <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4">
+            <CalibrationChart
+              data={calibration.calibration_curve}
+              brierScore={calibration.brier_score}
+            />
+          </div>
+        )}
+        {pnlCurve && pnlCurve.length > 0 && (
+          <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4">
+            <PnLChart data={pnlCurve} />
+          </div>
+        )}
+      </div>
+
+      {outcomeData && outcomeData.length > 0 && (
+        <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-4 mb-6">
+          <OutcomeChart data={outcomeData} />
         </div>
       )}
 
