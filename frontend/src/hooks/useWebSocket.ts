@@ -18,7 +18,8 @@ interface UseWebSocketOptions {
   enabled?: boolean
 }
 
-const WS_BASE = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8000`
+const WS_BASE = import.meta.env.VITE_WS_URL ||
+  `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
   const { agentId, enabled = true } = options
