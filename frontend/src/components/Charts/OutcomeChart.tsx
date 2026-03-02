@@ -1,6 +1,6 @@
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer,
+  Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 import type { OutcomeByType } from '../../api/charts'
 
@@ -35,6 +35,7 @@ export default function OutcomeChart({ data }: Props) {
             contentStyle={{ background: '#161b22', border: '1px solid #21262d', borderRadius: 6, fontSize: 12 }}
             cursor={{ fill: '#161b22' }}
           />
+          <Legend wrapperStyle={{ fontSize: 11, color: '#7d8590' }} />
           <Bar dataKey="wins" stackId="a" fill="#3fb950" name="Wins" />
           <Bar dataKey="losses" stackId="a" fill="#f85149" name="Losses" />
         </BarChart>

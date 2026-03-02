@@ -24,7 +24,8 @@ export default function ReputationGauge({ score, size = 'md' }: Props) {
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: outer, height: outer }}>
-      <svg width={outer} height={outer} className="-rotate-90">
+      <svg width={outer} height={outer} className="-rotate-90" role="img" aria-label={`Reputation score: ${score} out of 100`}>
+        <title>Reputation: {score}/100</title>
         {/* Background circle */}
         <circle
           cx={outer / 2}

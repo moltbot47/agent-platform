@@ -18,6 +18,7 @@ WORKDIR /app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -31,7 +32,7 @@ COPY backend/ ./
 COPY --from=frontend-build /app/frontend/dist ./frontend_dist
 
 # Collect static files
-RUN python manage.py collectstatic --noinput 2>/dev/null || true
+RUN python manage.py collectstatic --noinput
 
 # Create non-root user
 RUN adduser --disabled-password --gecos '' appuser
@@ -41,7 +42,7 @@ USER appuser
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/agents/')" || exit 1
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/')" || exit 1
 
 # Run with Daphne (ASGI for WebSocket support)
 CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "agent_platform.asgi:application"]

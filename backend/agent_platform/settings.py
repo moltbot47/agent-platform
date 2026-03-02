@@ -6,6 +6,7 @@ Single-file settings with environment variable overrides for production.
 import os
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -18,6 +19,12 @@ SECRET_KEY = os.environ.get(
 )
 DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() == "true"
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
+# Guard against running with insecure defaults in production
+if not DEBUG and SECRET_KEY.startswith("django-insecure"):
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY must be set to a secure value when DEBUG=False."
+    )
 
 # --- Installed Apps ---
 INSTALLED_APPS = [
@@ -72,13 +79,20 @@ WSGI_APPLICATION = "agent_platform.wsgi.application"
 ASGI_APPLICATION = "agent_platform.asgi.application"
 
 # --- Django Channels ---
+_CHANNEL_BACKEND = os.environ.get(
+    "CHANNEL_LAYER_BACKEND",
+    "channels.layers.InMemoryChannelLayer",
+)
+_CHANNEL_CONFIG = {}
+if "redis" in _CHANNEL_BACKEND.lower():
+    _CHANNEL_CONFIG = {
+        "hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379/0")],
+    }
+
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": os.environ.get(
-            "CHANNEL_LAYER_BACKEND",
-            "channels.layers.InMemoryChannelLayer",
-        ),
-        "CONFIG": {},
+        "BACKEND": _CHANNEL_BACKEND,
+        "CONFIG": _CHANNEL_CONFIG,
     }
 }
 
@@ -136,6 +150,14 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.JSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
     ],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/minute",
+        "user": "300/minute",
+    },
 }
 
 # --- drf-spectacular (OpenAPI docs) ---

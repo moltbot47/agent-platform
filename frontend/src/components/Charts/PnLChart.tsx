@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
   Tooltip, ReferenceLine, ResponsiveContainer,
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export default function PnLChart({ data }: Props) {
+  const gradientId = `pnlGradient-${useId()}`
   if (data.length === 0) {
     return (
       <div className="text-center text-sm text-[#484f58] py-8">
@@ -33,7 +35,7 @@ export default function PnLChart({ data }: Props) {
       <ResponsiveContainer width="100%" height={260}>
         <AreaChart data={data} margin={{ top: 10, right: 10, bottom: 20, left: 10 }}>
           <defs>
-            <linearGradient id="pnlGradient" x1="0" y1="0" x2="0" y2="1">
+            <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
               <stop
                 offset="5%"
                 stopColor={isPositive ? '#3fb950' : '#f85149'}
@@ -77,7 +79,7 @@ export default function PnLChart({ data }: Props) {
             type="monotone"
             dataKey="cumulative_pnl"
             stroke={isPositive ? '#3fb950' : '#f85149'}
-            fill="url(#pnlGradient)"
+            fill={`url(#${gradientId})`}
             strokeWidth={2}
           />
         </AreaChart>

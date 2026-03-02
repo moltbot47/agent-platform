@@ -5,6 +5,7 @@ Falls back to no-op if POSTHOG_API_KEY is not configured.
 """
 
 import logging
+import threading
 
 from django.conf import settings
 
@@ -12,14 +13,18 @@ logger = logging.getLogger(__name__)
 
 _posthog = None
 _initialized = False
+_init_lock = threading.Lock()
 
 
 def _get_client():
-    """Lazy-initialize the PostHog client."""
+    """Lazy-initialize the PostHog client (thread-safe)."""
     global _posthog, _initialized
     if _initialized:
         return _posthog
-    _initialized = True
+    with _init_lock:
+        if _initialized:
+            return _posthog
+        _initialized = True
 
     api_key = getattr(settings, "POSTHOG_API_KEY", "")
     if not api_key:

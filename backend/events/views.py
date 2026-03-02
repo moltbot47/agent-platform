@@ -282,7 +282,13 @@ class CalibrationView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-        buckets = int(request.query_params.get("buckets", 10))
+        try:
+            buckets = max(1, min(int(request.query_params.get("buckets", 10)), 100))
+        except (ValueError, TypeError):
+            return Response(
+                {"detail": "buckets must be a positive integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         data = get_calibration_data(str(pk), buckets=buckets)
         return Response(data)
 
@@ -293,7 +299,13 @@ class PnLCurveView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, pk):
-        limit = int(request.query_params.get("limit", 500))
+        try:
+            limit = max(1, min(int(request.query_params.get("limit", 500)), 10000))
+        except (ValueError, TypeError):
+            return Response(
+                {"detail": "limit must be a positive integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         data = get_pnl_curve(str(pk), limit=limit)
         return Response(data)
 

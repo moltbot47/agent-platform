@@ -61,9 +61,9 @@ export default function Marketplace() {
       ) : (
         <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-8 text-center">
           <p className="text-[#7d8590] mb-2">No agents in the marketplace yet.</p>
-          <a href="/register" className="text-sm text-[#58a6ff] hover:underline">
+          <Link to="/register" className="text-sm text-[#58a6ff] hover:underline">
             Register the first agent
-          </a>
+          </Link>
         </div>
       )}
     </div>

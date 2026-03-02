@@ -21,17 +21,20 @@ interface UseWebSocketOptions {
 const WS_BASE = import.meta.env.VITE_WS_URL || `ws://${window.location.hostname}:8000`
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
-  const { agentId, maxEvents = 200, enabled = true } = options
+  const { agentId, enabled = true } = options
   const [events, setEvents] = useState<AgentEvent[]>([])
   const [status, setStatus] = useState<ConnectionStatus>('disconnected')
   const [eventCount, setEventCount] = useState(0)
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimeout = useRef<ReturnType<typeof setTimeout>>()
   const reconnectAttempts = useRef(0)
+  const isMounted = useRef(true)
+  const maxEventsRef = useRef(options.maxEvents ?? 200)
+  maxEventsRef.current = options.maxEvents ?? 200
   const maxReconnectAttempts = 10
 
   const connect = useCallback(() => {
-    if (!enabled) return
+    if (!enabled || !isMounted.current) return
 
     const path = agentId ? `ws/events/${agentId}/` : 'ws/events/'
     const url = `${WS_BASE}/${path}`
@@ -42,19 +45,22 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     wsRef.current = ws
 
     ws.onopen = () => {
+      if (!isMounted.current) { ws.close(); return }
       setStatus('connected')
       reconnectAttempts.current = 0
     }
 
     ws.onmessage = (msg) => {
+      if (!isMounted.current) return
       try {
         const data: WebSocketMessage = JSON.parse(msg.data)
+        const max = maxEventsRef.current
 
         if (data.type === 'event_new' && data.event) {
-          setEvents((prev) => [data.event!, ...prev].slice(0, maxEvents))
+          setEvents((prev) => [data.event!, ...prev].slice(0, max))
           setEventCount((c) => c + 1)
         } else if (data.type === 'event_batch' && data.events) {
-          setEvents((prev) => [...data.events!, ...prev].slice(0, maxEvents))
+          setEvents((prev) => [...data.events!, ...prev].slice(0, max))
           setEventCount((c) => c + (data.count ?? data.events!.length))
         }
       } catch {
@@ -63,10 +69,12 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     }
 
     ws.onerror = () => {
+      if (!isMounted.current) return
       setStatus('error')
     }
 
     ws.onclose = () => {
+      if (!isMounted.current) return
       setStatus('disconnected')
       wsRef.current = null
 
@@ -77,12 +85,14 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         reconnectTimeout.current = setTimeout(connect, delay)
       }
     }
-  }, [agentId, enabled, maxEvents])
+  }, [agentId, enabled])
 
   useEffect(() => {
+    isMounted.current = true
     connect()
 
     return () => {
+      isMounted.current = false
       if (reconnectTimeout.current) {
         clearTimeout(reconnectTimeout.current)
       }

@@ -14,14 +14,17 @@ class AgentReputationSerializer(serializers.ModelSerializer):
 class AgentOwnershipSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgentOwnership
-        exclude = ["id", "agent"]
+        exclude = ["id", "agent", "creator_email"]
 
 
 class AgentLicenseSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgentLicense
-        fields = "__all__"
-        read_only_fields = ["created_at"]
+        fields = [
+            "id", "license_type", "is_exclusive", "monthly_fee_usd",
+            "terms", "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]
 
 
 class AgentListSerializer(serializers.ModelSerializer):

@@ -1,12 +1,13 @@
 """Agent Platform SDK setup."""
 
+from pathlib import Path
 from setuptools import setup, find_packages
 
 setup(
     name="agent-platform-sdk",
     version="0.1.0",
     description="Python SDK for the Agent Platform — instrument your agents in 3 lines.",
-    long_description=open("README.md").read(),
+    long_description=Path("README.md").read_text(encoding="utf-8") if Path("README.md").exists() else "",
     long_description_content_type="text/markdown",
     author="Durayveon Butler",
     author_email="dbutler@eulaproperties.com",

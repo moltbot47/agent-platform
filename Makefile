@@ -65,12 +65,12 @@ docker-logs: ## Tail service logs
 	cd deploy && docker compose logs -f
 
 # --- Full stack ---
-dev: ## Run backend + frontend concurrently
-	@echo "Start backend: make backend-run (or make backend-asgi for WebSockets)"
-	@echo "Start frontend: make frontend-dev"
+dev: ## Run backend + frontend in parallel
+	$(MAKE) backend-run & $(MAKE) frontend-dev
 
-test: ## Run all tests
+test: ## Run all tests (backend + frontend)
 	$(MAKE) backend-test
+	$(MAKE) frontend-test
 
 setup: ## Full setup (install + migrate + seed)
 	$(MAKE) backend-install

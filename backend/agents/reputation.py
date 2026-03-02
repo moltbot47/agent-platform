@@ -7,11 +7,11 @@ Factors: accuracy, profitability, reliability, consistency.
 import logging
 from datetime import timedelta
 
-from django.db.models import Avg, Count, Q
+from django.db.models import Count, Q, Subquery
 from django.utils import timezone
 
 from agents.models import Agent, AgentReputation
-from events.models import AgentEvent, AgentMetric
+from events.models import AgentEvent
 
 logger = logging.getLogger(__name__)
 
@@ -29,17 +29,21 @@ def recalculate_reputation(agent: Agent, window_days: int = 30) -> AgentReputati
     rep, _ = AgentReputation.objects.get_or_create(agent=agent)
     cutoff = timezone.now() - timedelta(days=window_days)
 
-    # Get resolved events
+    # Get resolved events — aggregate wins/losses in one query
     resolved = AgentEvent.objects.filter(
         agent=agent,
         event_type="resolution",
         outcome__in=["win", "loss"],
         timestamp__gte=cutoff,
     )
-
-    total_resolved = resolved.count()
-    wins = resolved.filter(outcome="win").count()
-    losses = resolved.filter(outcome="loss").count()
+    agg = resolved.aggregate(
+        total=Count("id"),
+        wins=Count("id", filter=Q(outcome="win")),
+        losses=Count("id", filter=Q(outcome="loss")),
+    )
+    total_resolved = agg["total"]
+    wins = agg["wins"]
+    losses = agg["losses"]
 
     # Win rate
     win_rate = wins / total_resolved if total_resolved > 0 else 0.0
@@ -73,9 +77,36 @@ def recalculate_reputation(agent: Agent, window_days: int = 30) -> AgentReputati
     )
     reliability = min(days_active / max(window_days, 1), 1.0)
 
-    # Consistency: how stable is the win rate? (inverse of variance approximation)
-    # Simple: check if win rate is close to overall across recent windows
-    consistency = 1.0 - abs(win_rate - 0.5)  # Higher if closer to edge
+    # Consistency: stability of win rate over time
+    # Higher score = more stable performance (low variance in daily win rates)
+    # With sufficient data, measure variance across daily win rates
+    if total_resolved >= 10:
+        # Get daily win counts
+        from django.db.models import FloatField, Value
+        from django.db.models.functions import Cast
+
+        daily_stats = (
+            resolved.extra(select={"day": "DATE(timestamp)"})
+            .values("day")
+            .annotate(
+                day_total=Count("id"),
+                day_wins=Count("id", filter=Q(outcome="win")),
+            )
+            .filter(day_total__gte=2)  # Only days with enough trades
+        )
+        daily_win_rates = [
+            d["day_wins"] / d["day_total"] for d in daily_stats if d["day_total"] > 0
+        ]
+        if len(daily_win_rates) >= 2:
+            mean_wr = sum(daily_win_rates) / len(daily_win_rates)
+            variance = sum((wr - mean_wr) ** 2 for wr in daily_win_rates) / len(daily_win_rates)
+            # Lower variance = higher consistency (0-1 scale)
+            # Max variance for a binary outcome is 0.25 (all 0s and 1s)
+            consistency = max(0.0, 1.0 - (variance / 0.25))
+        else:
+            consistency = 0.5  # Insufficient data, neutral score
+    else:
+        consistency = 0.5  # Insufficient data
 
     # Calculate component scores (0-100 scale)
     accuracy_score = min(win_rate * 100, 100)
@@ -115,9 +146,13 @@ def recalculate_reputation(agent: Agent, window_days: int = 30) -> AgentReputati
 
 def recalculate_all(window_days: int = 30) -> int:
     """Recalculate reputation for all agents with events."""
+    # Get agent IDs that have events in one query instead of N+1
+    agent_ids_with_events = (
+        AgentEvent.objects.values_list("agent_id", flat=True).distinct()
+    )
+    agents = Agent.objects.filter(id__in=Subquery(agent_ids_with_events))
     count = 0
-    for agent in Agent.objects.all():
-        if AgentEvent.objects.filter(agent=agent).exists():
-            recalculate_reputation(agent, window_days)
-            count += 1
+    for agent in agents:
+        recalculate_reputation(agent, window_days)
+        count += 1
     return count

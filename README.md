@@ -79,7 +79,7 @@ client.emit("prediction", instrument="BTC-USD", payload={"direction": "long", "c
 Pipeline context manager for grouped events:
 
 ```python
-with client.pipeline("BTC-USD") as p:
+with client.pipeline("cycle_001", "BTC-USD") as p:
     p.stage("data_fetch", outcome="pass")
     p.stage("signal", outcome="pass", confidence=0.85)
     p.stage("execution", outcome="pass", payload={"price": 67500})

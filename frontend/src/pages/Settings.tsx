@@ -38,7 +38,7 @@ export default function Settings() {
           </h3>
           <p className="text-xs text-[#484f58]">
             Backend running at{' '}
-            <span className="font-mono text-[#7d8590]">localhost:8000</span>
+            <span className="font-mono text-[#7d8590]">{window.location.hostname}:8000</span>
           </p>
           <p className="text-xs text-[#484f58] mt-1">
             API docs at{' '}

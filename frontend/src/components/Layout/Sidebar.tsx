@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: '/events', label: 'Events', icon: '⚡' },
   { to: '/marketplace', label: 'Marketplace', icon: '◈' },
   { to: '/register', label: 'Register', icon: '+' },
+  { to: '/settings', label: 'Settings', icon: '⚙' },
 ]
 
 export default function Sidebar() {

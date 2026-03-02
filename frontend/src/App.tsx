@@ -1,5 +1,6 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import Layout from './components/Layout/Layout'
+import ErrorBoundary from './components/ErrorBoundary'
 import Dashboard from './pages/Dashboard'
 import AgentRegistry from './pages/AgentRegistry'
 import AgentDetail from './pages/AgentDetail'
@@ -12,6 +13,7 @@ import PipelineView from './pages/PipelineView'
 const router = createBrowserRouter([
   {
     element: <Layout />,
+    errorElement: <ErrorBoundary />,
     children: [
       { path: '/', element: <Dashboard /> },
       { path: '/agents', element: <AgentRegistry /> },

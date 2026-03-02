@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import Header from '../components/Layout/Header'
 import StatCard from '../components/Cards/StatCard'
 import AgentCard from '../components/Cards/AgentCard'
@@ -60,9 +61,9 @@ export default function Dashboard() {
           ) : (
             <div className="bg-[#0d1117] border border-[#21262d] rounded-lg p-8 text-center">
               <p className="text-[#7d8590] mb-2">No agents registered yet.</p>
-              <a href="/register" className="text-sm text-[#58a6ff] hover:underline">
+              <Link to="/register" className="text-sm text-[#58a6ff] hover:underline">
                 Register your first agent
-              </a>
+              </Link>
             </div>
           )}
         </div>

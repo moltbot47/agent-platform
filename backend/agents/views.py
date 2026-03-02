@@ -1,5 +1,6 @@
 """API views for Agent registry and management."""
 
+from django.db import IntegrityError
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
@@ -63,7 +64,13 @@ class AgentRegisterView(APIView):
     def post(self, request):
         serializer = AgentRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        result = serializer.save()
+        try:
+            result = serializer.save()
+        except IntegrityError:
+            return Response(
+                {"name": ["An agent with this name already exists."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         agent = result["agent"]
         agent_data = AgentDetailSerializer(agent).data
@@ -140,13 +147,22 @@ class AgentLicenseListView(generics.ListCreateAPIView):
     """List or create licenses for an agent."""
 
     serializer_class = AgentLicenseSerializer
-    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsAgentAuthenticated()]
+        return [AllowAny()]
 
     def get_queryset(self):
         return AgentLicense.objects.filter(agent_id=self.kwargs["pk"])
 
     def perform_create(self, serializer):
         agent = generics.get_object_or_404(Agent, pk=self.kwargs["pk"])
+        # Verify the authenticated agent owns this resource
+        api_key = self.request.auth
+        if api_key.agent_id != agent.id:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("You can only create licenses for your own agent.")
         serializer.save(agent=agent)
 
 

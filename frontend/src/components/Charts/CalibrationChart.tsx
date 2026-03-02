@@ -64,7 +64,7 @@ export default function CalibrationChart({ data, brierScore }: Props) {
             formatter={((value: any, name: any) => {
               const v = Number(value ?? 0)
               if (name === 'actual') return [`${(v * 100).toFixed(1)}%`, 'Actual Win Rate']
-              return [v, name]
+              return [`${(v * 100).toFixed(1)}%`, 'Predicted Confidence']
             }) as any}
           />
           {/* Perfect calibration line */}
@@ -74,6 +74,7 @@ export default function CalibrationChart({ data, brierScore }: Props) {
             strokeDasharray="5 5"
           />
           <Scatter
+            name="Calibration"
             data={chartData}
             fill="#1f6feb"
             r={6}

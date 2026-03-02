@@ -92,13 +92,17 @@ class AgentClient:
         if timestamp:
             data["timestamp"] = timestamp.isoformat()
 
-        response = self._session.post(
-            f"{self.base_url}/api/v1/events/",
-            json=data,
-            timeout=self.timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        try:
+            response = self._session.post(
+                f"{self.base_url}/api/v1/events/",
+                json=data,
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            logger.error("Failed to emit event %s: %s", event_type, exc)
+            raise
 
     def emit_batch(self, events: list[dict[str, Any]]) -> dict:
         """Send up to 100 events in a single request.
@@ -112,13 +116,17 @@ class AgentClient:
         if len(events) > 100:
             raise ValueError("Maximum 100 events per batch")
 
-        response = self._session.post(
-            f"{self.base_url}/api/v1/events/batch/",
-            json={"events": events},
-            timeout=self.timeout,
-        )
-        response.raise_for_status()
-        return response.json()
+        try:
+            response = self._session.post(
+                f"{self.base_url}/api/v1/events/batch/",
+                json={"events": events},
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            logger.error("Failed to emit batch (%d events): %s", len(events), exc)
+            raise
 
     def heartbeat(self) -> dict:
         """Send a heartbeat to mark the agent as online.
@@ -161,7 +169,10 @@ class PipelineContext:
 
     def __exit__(self, exc_type: type | None, exc_val: Exception | None, exc_tb: Any) -> None:
         if exc_type:
-            self.stage("error", outcome="error", payload={"error": str(exc_val)})
+            try:
+                self.stage("error", outcome="error", payload={"error": str(exc_val)})
+            except Exception:
+                logger.warning("Failed to emit error stage during pipeline cleanup")
 
     def stage(
         self,

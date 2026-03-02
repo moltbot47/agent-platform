@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import Header from '../components/Layout/Header'
 import { useAgent } from '../hooks/useAgents'
@@ -41,6 +41,9 @@ export default function PipelineView() {
   const runs = data?.results ?? []
   const totalCount = data?.count ?? 0
   const [expandedRun, setExpandedRun] = useState<string | null>(null)
+
+  // Reset expanded run when filter or page changes (data invalidated)
+  useEffect(() => { setExpandedRun(null) }, [outcomeFilter, offset])
 
   return (
     <div>
