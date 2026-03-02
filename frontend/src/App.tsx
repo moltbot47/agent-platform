@@ -7,6 +7,7 @@ import EventExplorer from './pages/EventExplorer'
 import Marketplace from './pages/Marketplace'
 import Register from './pages/Register'
 import Settings from './pages/Settings'
+import PipelineView from './pages/PipelineView'
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,7 @@ const router = createBrowserRouter([
       { path: '/', element: <Dashboard /> },
       { path: '/agents', element: <AgentRegistry /> },
       { path: '/agents/:id', element: <AgentDetail /> },
+      { path: '/agents/:id/pipeline', element: <PipelineView /> },
       { path: '/events', element: <EventExplorer /> },
       { path: '/marketplace', element: <Marketplace /> },
       { path: '/register', element: <Register /> },

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import Header from '../components/Layout/Header'
 import StatCard from '../components/Cards/StatCard'
 import { useAgent } from '../hooks/useAgents'
@@ -43,6 +43,22 @@ export default function AgentDetail() {
             )}
           </span>
         )}
+      </div>
+
+      {/* Action links */}
+      <div className="flex gap-3 mb-6">
+        <Link
+          to={`/agents/${id}/pipeline`}
+          className="text-xs px-3 py-1.5 rounded border border-[#21262d] text-[#58a6ff] hover:border-[#388bfd] transition-colors"
+        >
+          View Pipeline Traces
+        </Link>
+        <Link
+          to={`/events?agent=${id}`}
+          className="text-xs px-3 py-1.5 rounded border border-[#21262d] text-[#58a6ff] hover:border-[#388bfd] transition-colors"
+        >
+          View Events
+        </Link>
       </div>
 
       {rep && (
