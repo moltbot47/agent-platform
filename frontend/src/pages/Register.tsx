@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../components/Layout/Header'
 import { useRegisterAgent } from '../hooks/useAgents'
+import { captureEvent } from '../lib/posthog'
 import type { AgentType } from '../types'
 
 const AGENT_TYPES: { value: AgentType; label: string }[] = [
@@ -34,6 +35,7 @@ export default function Register() {
   const stepIndex = STEPS.indexOf(step)
 
   const handleSubmit = () => {
+    captureEvent('registration_submitted', { agent_type: agentType })
     registerMutation.mutate(
       {
         name,
@@ -47,6 +49,7 @@ export default function Register() {
       {
         onSuccess: (data) => {
           setApiKey(data.api_key)
+          captureEvent('registration_completed', { agent_type: agentType, agent_name: name })
         },
       },
     )
@@ -190,7 +193,10 @@ client.emit("prediction", instrument="BTC-USD", payload={
               />
             </div>
             <button
-              onClick={() => setStep('Creator')}
+              onClick={() => {
+                captureEvent('registration_step', { step: 'creator', agent_type: agentType })
+                setStep('Creator')
+              }}
               disabled={!name || !displayName}
               className="text-sm px-4 py-2 rounded bg-[#1f6feb] text-white hover:bg-[#388bfd] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
@@ -246,7 +252,10 @@ client.emit("prediction", instrument="BTC-USD", payload={
                 Back
               </button>
               <button
-                onClick={() => setStep('Review')}
+                onClick={() => {
+                  captureEvent('registration_step', { step: 'review' })
+                  setStep('Review')
+                }}
                 disabled={!creatorName}
                 className="text-sm px-4 py-2 rounded bg-[#1f6feb] text-white hover:bg-[#388bfd] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >

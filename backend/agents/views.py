@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from core.permissions import IsAgentOwner
+from core.posthog_client import capture as posthog_capture, identify as posthog_identify
 
 from .models import Agent, AgentLicense
 from .serializers import (
@@ -64,7 +65,29 @@ class AgentRegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         result = serializer.save()
 
-        agent_data = AgentDetailSerializer(result["agent"]).data
+        agent = result["agent"]
+        agent_data = AgentDetailSerializer(agent).data
+
+        # Track in PostHog: identify agent as a "user" + capture registration event
+        posthog_identify(
+            str(agent.id),
+            {
+                "name": agent.name,
+                "display_name": agent.display_name,
+                "agent_type": agent.agent_type,
+                "creator": agent.ownership.creator_name if hasattr(agent, "ownership") else "",
+            },
+        )
+        posthog_capture(
+            str(agent.id),
+            "agent_registered",
+            {
+                "agent_type": agent.agent_type,
+                "has_soul_file": bool(agent.soul_file),
+                "capabilities_count": len(agent.capabilities),
+            },
+        )
+
         return Response(
             {
                 "agent": agent_data,
