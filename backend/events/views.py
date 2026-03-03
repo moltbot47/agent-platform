@@ -472,6 +472,7 @@ class BuildPipelinesView(APIView):
     """Manually trigger pipeline building for an agent."""
 
     permission_classes = [AllowAny]
+    authentication_classes = []  # No auth needed, skip CSRF
 
     def post(self, request, pk):
         try:
