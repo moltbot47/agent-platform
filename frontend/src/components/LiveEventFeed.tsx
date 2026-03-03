@@ -20,6 +20,12 @@ const TYPE_BG: Partial<Record<EventType, string>> = {
   claim: 'bg-[#77B96C]/10 border-l-2 border-l-[#77B96C]',
 }
 
+const TYPE_BADGE: Partial<Record<string, string>> = {
+  execution: 'bg-[#1D4AFF]/20 text-[#5E8AFF]',
+  signal: 'bg-[#5E8AFF]/20 text-[#5E8AFF]',
+  claim: 'bg-[#77B96C]/20 text-[#77B96C]',
+}
+
 type FilterMode = 'all' | 'trades' | 'signals'
 
 interface Props {
@@ -169,11 +175,9 @@ function EventRow({ event }: { event: AgentEvent }) {
     <div className={`flex items-center gap-3 px-4 py-2 transition-colors hover:bg-[#2C2E38]/50 ${rowBg} ${isTradeEvent ? 'py-3' : ''}`}>
       <span className="text-xs font-mono text-[#6B6F76] w-16 shrink-0">{time}</span>
       <span className={`text-[10px] font-mono uppercase px-1.5 py-0.5 rounded ${
-        event.event_type === 'execution' ? 'bg-[#1D4AFF]/20 text-[#5E8AFF]' :
-        event.event_type === 'resolution' ? (event.outcome === 'win' ? 'bg-[#77B96C]/20 text-[#77B96C]' : 'bg-[#F54E00]/20 text-[#F54E00]') :
-        event.event_type === 'signal' ? 'bg-[#5E8AFF]/20 text-[#5E8AFF]' :
-        event.event_type === 'claim' ? 'bg-[#77B96C]/20 text-[#77B96C]' :
-        'bg-[#2C2E38] text-[#6B6F76]'
+        event.event_type === 'resolution'
+          ? (event.outcome === 'win' ? 'bg-[#77B96C]/20 text-[#77B96C]' : 'bg-[#F54E00]/20 text-[#F54E00]')
+          : TYPE_BADGE[event.event_type] ?? 'bg-[#2C2E38] text-[#6B6F76]'
       }`}>
         {event.event_type.replace(/_/g, ' ')}
       </span>

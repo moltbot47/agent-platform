@@ -12,6 +12,7 @@ export function useAllEvents(params?: {
   return useQuery({
     queryKey: ['events', 'all', params],
     queryFn: () => fetchAllEvents(params),
+    staleTime: 10_000,
   })
 }
 

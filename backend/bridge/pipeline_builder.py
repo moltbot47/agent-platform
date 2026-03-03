@@ -54,12 +54,19 @@ def build_pipeline_runs(agent: Agent, limit: int = 50000) -> dict:
     # Determine stage order based on agent
     stages = TURBO_STAGES if "turbo" in agent.name else APEX_STAGES
 
+    # Pre-fetch all existing cycle IDs to avoid N+1 per-cycle existence checks
+    existing_cycle_ids = set(
+        DecisionPipelineRun.objects.filter(
+            agent=agent, cycle_id__in=list(cycles.keys()),
+        ).values_list("cycle_id", flat=True)
+    )
+
     runs_to_create = []
     event_updates = []
 
     for cycle_id, cycle_events in cycles.items():
         # Skip if pipeline run already exists
-        if DecisionPipelineRun.objects.filter(agent=agent, cycle_id=cycle_id).exists():
+        if cycle_id in existing_cycle_ids:
             continue
 
         # Determine pipeline outcome
