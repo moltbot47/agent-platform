@@ -10,7 +10,6 @@ export default function Dashboard() {
   const { data: agents, isLoading } = useAgents()
   const { data: summary } = useDashboardSummary()
 
-  const activeCount = agents?.filter((a) => a.status === 'active').length ?? 0
   const onlineCount = agents?.filter((a) => a.is_online).length ?? 0
 
   // Extract meaningful stats from summary
