@@ -27,16 +27,18 @@ describe('AgentCard', () => {
     expect(screen.getByText('Unknown creator')).toBeInTheDocument()
   })
 
-  it('renders reputation score', () => {
+  it('renders reputation gauge', () => {
     renderWithProviders(<AgentCard agent={mockAgentListItem} />)
-    expect(screen.getByText('75/100')).toBeInTheDocument()
+    // ReputationGauge renders the score value and an SVG with title
+    expect(screen.getByText('75')).toBeInTheDocument()
+    expect(screen.getByTitle('Reputation: 75/100')).toBeInTheDocument()
   })
 
-  it('does not render reputation when null', () => {
+  it('does not render reputation gauge when null', () => {
     renderWithProviders(
       <AgentCard agent={{ ...mockAgentListItem, reputation_score: null }} />,
     )
-    expect(screen.queryByText(/\/100/)).not.toBeInTheDocument()
+    expect(screen.queryByTitle(/Reputation:/)).not.toBeInTheDocument()
   })
 
   it('links to agent detail page', () => {

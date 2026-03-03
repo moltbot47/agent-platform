@@ -122,6 +122,18 @@ else:
         }
     }
 
+# --- Cache ---
+CACHES = {
+    "default": {
+        "BACKEND": os.environ.get(
+            "CACHE_BACKEND",
+            "django.core.cache.backends.locmem.LocMemCache",
+        ),
+        "LOCATION": os.environ.get("CACHE_LOCATION", "agent-platform-cache"),
+        "TIMEOUT": 30,
+    }
+}
+
 # --- Auth ---
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

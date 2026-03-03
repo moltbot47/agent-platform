@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import ReputationGauge from './ReputationGauge'
 import type { AgentListItem } from '../../types'
 
 interface AgentCardProps {
@@ -36,7 +37,7 @@ export default function AgentCard({ agent }: AgentCardProps) {
       <div className="flex items-center justify-between text-xs text-[#9B9EA3]">
         <span>{agent.owner ?? 'Unknown creator'}</span>
         {agent.reputation_score != null && (
-          <span className="font-mono text-[#EEEEEE] bg-[#2C2E38] px-2 py-0.5 rounded-md">{agent.reputation_score}/100</span>
+          <ReputationGauge score={agent.reputation_score} size="sm" />
         )}
       </div>
     </Link>

@@ -29,7 +29,10 @@ class AgentEventIngestSerializer(serializers.Serializer):
         choices=AgentEvent.Outcome.choices, required=False, default="pending"
     )
     instrument = serializers.CharField(required=False, default="", allow_blank=True)
-    confidence = serializers.FloatField(required=False, allow_null=True, default=None)
+    confidence = serializers.FloatField(
+        required=False, allow_null=True, default=None,
+        min_value=0.0, max_value=1.0,
+    )
     payload = serializers.JSONField(required=False, default=dict)
     cycle_id = serializers.CharField(required=False, default="", allow_blank=True)
     duration_ms = serializers.IntegerField(required=False, allow_null=True, default=None)
@@ -57,6 +60,20 @@ class AgentMetricSerializer(serializers.ModelSerializer):
             "instrument", "tier", "tags", "timestamp",
         ]
         read_only_fields = ["id"]
+
+
+class AgentMetricIngestSerializer(serializers.Serializer):
+    """Accepts metrics from agents via API key auth.
+
+    The agent is inferred from the API key — not submitted in the payload.
+    """
+
+    name = serializers.CharField(max_length=50)
+    value = serializers.FloatField()
+    instrument = serializers.CharField(required=False, default="", allow_blank=True)
+    tier = serializers.CharField(required=False, default="", allow_blank=True)
+    tags = serializers.JSONField(required=False, default=dict)
+    timestamp = serializers.DateTimeField(required=False)
 
 
 class DecisionPipelineRunSerializer(serializers.ModelSerializer):

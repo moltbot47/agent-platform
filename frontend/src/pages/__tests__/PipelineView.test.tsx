@@ -25,6 +25,10 @@ vi.mock('../../hooks/useEvents', () => ({
     data: undefined,
     isLoading: true,
   })),
+  usePipelineRunDetail: vi.fn(() => ({
+    data: undefined,
+    isLoading: false,
+  })),
 }))
 
 const { useAgent } = await import('../../hooks/useAgents')

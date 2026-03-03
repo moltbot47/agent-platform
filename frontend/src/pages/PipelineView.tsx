@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import Header from '../components/Layout/Header'
 import { useAgent } from '../hooks/useAgents'
-import { usePipelineRuns } from '../hooks/useEvents'
+import { usePipelineRuns, usePipelineRunDetail } from '../hooks/useEvents'
 import type { EventOutcome, PipelineRun } from '../types/event'
 
 const OUTCOME_COLORS: Record<EventOutcome, { bg: string; text: string; border: string }> = {
@@ -129,6 +129,10 @@ function PipelineRunCard({
 }) {
   const outcomeStyle = OUTCOME_COLORS[run.final_outcome as EventOutcome] ?? OUTCOME_COLORS.pending
 
+  // Fetch detail (with events) only when expanded
+  const { data: detail, isLoading: detailLoading } = usePipelineRunDetail(run.id, isExpanded)
+  const events = detail?.events ?? run.events ?? []
+
   return (
     <div className={`border rounded-xl ${outcomeStyle.border} overflow-hidden`}>
       {/* Header */}
@@ -201,10 +205,12 @@ function PipelineRunCard({
             </div>
           </div>
 
-          {run.events && run.events.length > 0 && (
+          {detailLoading ? (
+            <p className="text-xs text-[#6B6F76] mt-3">Loading events...</p>
+          ) : events.length > 0 ? (
             <div className="space-y-1 mt-3">
               <p className="text-xs text-[#6B6F76] uppercase tracking-wider mb-2 font-medium">Events</p>
-              {run.events.map((event, idx) => (
+              {events.map((event, idx) => (
                 <div
                   key={event.id}
                   className="flex items-center gap-3 text-xs py-2 border-b border-[#2C2E38] last:border-0"
@@ -221,6 +227,8 @@ function PipelineRunCard({
                 </div>
               ))}
             </div>
+          ) : (
+            <p className="text-xs text-[#6B6F76] mt-3">No events recorded for this run.</p>
           )}
         </div>
       )}

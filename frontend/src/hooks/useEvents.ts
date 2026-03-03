@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchAllEvents, fetchAgentEvents, fetchDashboardSummary, fetchPipelineRuns, fetchTradingStats } from '../api/events'
+import { fetchAllEvents, fetchAgentEvents, fetchDashboardSummary, fetchPipelineRuns, fetchPipelineRunDetail, fetchTradingStats } from '../api/events'
 
 export function useAllEvents(params?: {
   event_type?: string
@@ -48,6 +48,15 @@ export function usePipelineRuns(agentId: string, params?: {
     queryKey: ['pipeline-runs', agentId, params],
     queryFn: () => fetchPipelineRuns(agentId, params),
     enabled: !!agentId,
+  })
+}
+
+export function usePipelineRunDetail(runId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['pipeline-run-detail', runId],
+    queryFn: () => fetchPipelineRunDetail(runId),
+    enabled: !!runId && enabled,
+    staleTime: 30_000,
   })
 }
 

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Header from '../components/Layout/Header'
 import { useRegisterAgent } from '../hooks/useAgents'
@@ -55,6 +55,26 @@ export default function Register() {
     )
   }
 
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyKey = useCallback(async () => {
+    if (!apiKey) return
+    try {
+      await navigator.clipboard.writeText(apiKey)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      // Fallback: select the text
+      const el = document.querySelector('[data-testid="api-key-display"]')
+      if (el) {
+        const range = document.createRange()
+        range.selectNodeContents(el)
+        window.getSelection()?.removeAllRanges()
+        window.getSelection()?.addRange(range)
+      }
+    }
+  }, [apiKey])
+
   if (apiKey) {
     return (
       <div>
@@ -67,8 +87,25 @@ export default function Register() {
           <p className="text-xs text-[#9B9EA3] mb-3">
             Copy this key now — it will not be shown again.
           </p>
-          <div className="bg-[#1D1F27] border border-[#2C2E38] rounded-lg p-3 font-mono text-sm text-[#EEEEEE] break-all select-all">
-            {apiKey}
+          <div className="flex items-center gap-2">
+            <div
+              data-testid="api-key-display"
+              className="flex-1 bg-[#1D1F27] border border-[#2C2E38] rounded-lg p-3 font-mono text-sm text-[#EEEEEE] break-all select-all"
+            >
+              {apiKey}
+            </div>
+            <button
+              onClick={handleCopyKey}
+              data-testid="copy-api-key"
+              className={`shrink-0 px-3 py-3 rounded-lg border transition-all text-xs font-medium ${
+                copied
+                  ? 'bg-[#77B96C]/20 border-[#77B96C]/50 text-[#77B96C]'
+                  : 'border-[#2C2E38] text-[#9B9EA3] hover:text-[#EEEEEE] hover:border-[#1D4AFF]/50'
+              }`}
+              aria-label="Copy API key to clipboard"
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
           </div>
         </div>
 

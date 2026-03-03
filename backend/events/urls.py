@@ -12,6 +12,8 @@ urlpatterns = [
     path("events/batch/", views.EventBatchIngestView.as_view(), name="event-batch-ingest"),
     # Browse all events (public)
     path("events/all/", views.AllEventsListView.as_view(), name="event-list-all"),
+    # Metric ingest (API key auth)
+    path("metrics/", views.MetricIngestView.as_view(), name="metric-ingest"),
     # Per-agent events
     path("agents/<uuid:pk>/events/", views.AgentEventListView.as_view(), name="agent-events"),
     path("agents/<uuid:pk>/metrics/", views.AgentMetricListView.as_view(), name="agent-metrics"),

@@ -2,6 +2,7 @@
 
 import logging
 
+from django.core.cache import cache
 from django.db.models import Avg, Count, Q, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
@@ -22,6 +23,7 @@ from .serializers import (
     AgentEventBatchSerializer,
     AgentEventIngestSerializer,
     AgentEventSerializer,
+    AgentMetricIngestSerializer,
     AgentMetricSerializer,
     DashboardSummarySerializer,
     DecisionPipelineRunListSerializer,
@@ -189,6 +191,15 @@ class AllEventsListView(generics.ListAPIView):
         if agent_id:
             qs = qs.filter(agent_id=agent_id)
 
+        # Date range
+        since = self.request.query_params.get("since")
+        if since:
+            qs = qs.filter(timestamp__gte=since)
+
+        until = self.request.query_params.get("until")
+        if until:
+            qs = qs.filter(timestamp__lte=until)
+
         return qs
 
 
@@ -211,6 +222,24 @@ class AgentMetricListView(generics.ListAPIView):
             qs = qs.filter(instrument=instrument)
 
         return qs
+
+
+class MetricIngestView(APIView):
+    """Ingest a single metric from an authenticated agent."""
+
+    permission_classes = [IsAgentAuthenticated]
+
+    @extend_schema(request=AgentMetricIngestSerializer, responses={201: AgentMetricSerializer})
+    def post(self, request):
+        serializer = AgentMetricIngestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        api_key: AgentAPIKey = request.auth
+        agent = api_key.agent
+
+        metric = AgentMetric.objects.create(agent=agent, **serializer.validated_data)
+
+        return Response(AgentMetricSerializer(metric).data, status=status.HTTP_201_CREATED)
 
 
 class PipelineRunListView(generics.ListAPIView):
@@ -245,40 +274,51 @@ class PipelineRunDetailView(generics.RetrieveAPIView):
 
 
 class DashboardSummaryView(APIView):
-    """Aggregated metrics for the dashboard."""
+    """Aggregated metrics for the dashboard.
+
+    Results are cached for 30 seconds to avoid repeated aggregation queries.
+    """
 
     permission_classes = [AllowAny]
+    CACHE_KEY = "dashboard_summary"
+    CACHE_TTL = 30  # seconds
 
     @extend_schema(responses={200: DashboardSummarySerializer})
     def get(self, request):
+        cached = cache.get(self.CACHE_KEY)
+        if cached is not None:
+            return Response(DashboardSummarySerializer(cached).data)
+
         today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
-        total_events = AgentEvent.objects.count()
-        events_today = AgentEvent.objects.filter(timestamp__gte=today).count()
-        total_runs = DecisionPipelineRun.objects.count()
+        # Single aggregation query for events: total, today, type counts, outcome counts
+        event_agg = AgentEvent.objects.aggregate(
+            total_events=Count("id"),
+            events_today=Count("id", filter=Q(timestamp__gte=today)),
+        )
 
-        # Pass rate
-        if total_runs > 0:
-            passed = DecisionPipelineRun.objects.filter(
-                final_outcome__in=["pass", "win"]
-            ).count()
-            pass_rate = round(passed / total_runs * 100, 1)
-        else:
-            pass_rate = 0.0
+        # Single aggregation query for pipeline runs: total, passed, avg duration
+        run_agg = DecisionPipelineRun.objects.aggregate(
+            total_runs=Count("id"),
+            passed_runs=Count(
+                "id", filter=Q(final_outcome__in=["pass", "win"])
+            ),
+            avg_duration=Avg("duration_ms"),
+        )
 
-        # Avg pipeline duration
-        avg_duration = DecisionPipelineRun.objects.aggregate(
-            avg=Avg("duration_ms")
-        )["avg"]
+        total_runs = run_agg["total_runs"]
+        pass_rate = (
+            round(run_agg["passed_runs"] / total_runs * 100, 1)
+            if total_runs > 0
+            else 0.0
+        )
 
-        # Event type counts
+        # Event type counts and outcome counts (2 lightweight group-by queries)
         type_counts = dict(
             AgentEvent.objects.values_list("event_type")
             .annotate(count=Count("id"))
             .order_by("-count")
         )
-
-        # Outcome counts
         outcome_counts = dict(
             AgentEvent.objects.values_list("outcome")
             .annotate(count=Count("id"))
@@ -286,14 +326,18 @@ class DashboardSummaryView(APIView):
         )
 
         data = {
-            "total_events": total_events,
-            "events_today": events_today,
+            "total_events": event_agg["total_events"],
+            "events_today": event_agg["events_today"],
             "total_pipeline_runs": total_runs,
             "pass_rate": pass_rate,
-            "avg_duration_ms": round(avg_duration, 1) if avg_duration else None,
+            "avg_duration_ms": (
+                round(run_agg["avg_duration"], 1) if run_agg["avg_duration"] else None
+            ),
             "event_type_counts": type_counts,
             "outcome_counts": outcome_counts,
         }
+
+        cache.set(self.CACHE_KEY, data, self.CACHE_TTL)
         return Response(DashboardSummarySerializer(data).data)
 
 

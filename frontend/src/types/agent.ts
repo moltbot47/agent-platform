@@ -31,6 +31,9 @@ export interface AgentListItem {
   last_heartbeat: string | null
   created_at: string
   updated_at: string
+  win_rate: number | null
+  total_trades: number | null
+  profit_factor: number | null
 }
 
 export interface AgentOwnership {

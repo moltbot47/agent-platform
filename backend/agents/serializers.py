@@ -38,6 +38,15 @@ class AgentListSerializer(serializers.ModelSerializer):
         source="ownership.creator_name", read_only=True, default=None
     )
     is_online = serializers.BooleanField(read_only=True)
+    win_rate = serializers.FloatField(
+        source="reputation.win_rate", read_only=True, default=None
+    )
+    total_trades = serializers.IntegerField(
+        source="reputation.total_trades", read_only=True, default=None
+    )
+    profit_factor = serializers.FloatField(
+        source="reputation.profit_factor", read_only=True, default=None
+    )
 
     class Meta:
         model = Agent
@@ -53,6 +62,9 @@ class AgentListSerializer(serializers.ModelSerializer):
             "last_heartbeat",
             "created_at",
             "updated_at",
+            "win_rate",
+            "total_trades",
+            "profit_factor",
         ]
 
 

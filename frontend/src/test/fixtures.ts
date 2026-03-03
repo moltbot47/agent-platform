@@ -13,6 +13,9 @@ export const mockAgentListItem: AgentListItem = {
   last_heartbeat: '2026-03-01T12:00:00Z',
   created_at: '2026-02-01T00:00:00Z',
   updated_at: '2026-03-01T12:00:00Z',
+  win_rate: 0.567,
+  total_trades: 187,
+  profit_factor: 1.61,
 }
 
 export const mockAgentDetail: AgentDetail = {

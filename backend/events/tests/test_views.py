@@ -2,6 +2,7 @@
 
 import hashlib
 
+from django.core.cache import cache
 from django.test import TestCase
 from rest_framework.test import APIClient
 
@@ -111,6 +112,7 @@ class EventListTest(TestCase):
 class DashboardSummaryTest(TestCase):
     def setUp(self):
         self.client = APIClient()
+        cache.clear()
         self.agent = Agent.objects.create(
             name="dash_bot", display_name="Dash Bot",
         )
