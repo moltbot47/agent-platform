@@ -36,7 +36,7 @@ describe('StatCard', () => {
       <StatCard label="PnL" value="$3,205" subtext="+15%" trend="up" />,
     )
     const subtext = screen.getByText('+15%')
-    expect(subtext.className).toContain('text-[#3fb950]')
+    expect(subtext.className).toContain('text-[#77B96C]')
   })
 
   it('applies red color for downward trend', () => {
@@ -44,7 +44,7 @@ describe('StatCard', () => {
       <StatCard label="Drawdown" value="-$500" subtext="-2.5%" trend="down" />,
     )
     const subtext = screen.getByText('-2.5%')
-    expect(subtext.className).toContain('text-[#f85149]')
+    expect(subtext.className).toContain('text-[#F54E00]')
   })
 
   it('applies neutral color when no trend', () => {
@@ -52,6 +52,6 @@ describe('StatCard', () => {
       <StatCard label="Count" value={42} subtext="steady" trend="neutral" />,
     )
     const subtext = screen.getByText('steady')
-    expect(subtext.className).toContain('text-[#7d8590]')
+    expect(subtext.className).toContain('text-[#9B9EA3]')
   })
 })

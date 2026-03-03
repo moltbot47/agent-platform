@@ -63,7 +63,9 @@ describe('LiveEventFeed', () => {
     })
     renderWithProviders(<LiveEventFeed />)
     expect(screen.getByText('2')).toBeInTheDocument() // event count badge
-    expect(screen.getAllByText('Test Agent')).toHaveLength(2)
+    // Event type labels are rendered
+    expect(screen.getByText('prediction')).toBeInTheDocument()
+    expect(screen.getByText('edge gate')).toBeInTheDocument()
   })
 
   it('shows clear button when events exist', async () => {
@@ -80,7 +82,7 @@ describe('LiveEventFeed', () => {
     expect(mockClearEvents).toHaveBeenCalled()
   })
 
-  it('displays instrument in brackets', () => {
+  it('displays instrument', () => {
     mockUseWebSocket.mockReturnValue({
       events: [mockEvent],
       status: 'connected',
@@ -89,18 +91,20 @@ describe('LiveEventFeed', () => {
       isConnected: true,
     })
     renderWithProviders(<LiveEventFeed />)
-    expect(screen.getByText('[MNQ]')).toBeInTheDocument()
+    expect(screen.getByText('MNQ')).toBeInTheDocument()
   })
 
-  it('displays confidence as percentage', () => {
+  it('renders filter tabs', () => {
     mockUseWebSocket.mockReturnValue({
-      events: [mockEvent],
+      events: [],
       status: 'connected',
-      eventCount: 1,
+      eventCount: 0,
       clearEvents: mockClearEvents,
       isConnected: true,
     })
     renderWithProviders(<LiveEventFeed />)
-    expect(screen.getByText('(85%)')).toBeInTheDocument()
+    expect(screen.getByText('All')).toBeInTheDocument()
+    expect(screen.getByText('Trades Only')).toBeInTheDocument()
+    expect(screen.getByText('Signals')).toBeInTheDocument()
   })
 })

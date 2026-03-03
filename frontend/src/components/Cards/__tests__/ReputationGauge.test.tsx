@@ -23,25 +23,25 @@ describe('ReputationGauge', () => {
   it('uses green color for high scores (>=70)', () => {
     const { container } = renderWithProviders(<ReputationGauge score={85} />)
     const scoreSpan = container.querySelector('span')!
-    expect(scoreSpan.style.color).toBe('rgb(63, 185, 80)') // #3fb950
+    expect(scoreSpan.style.color).toBe('rgb(119, 185, 108)') // #77B96C
   })
 
-  it('uses yellow color for medium scores (50-69)', () => {
+  it('uses amber color for medium scores (50-69)', () => {
     const { container } = renderWithProviders(<ReputationGauge score={55} />)
     const scoreSpan = container.querySelector('span')!
-    expect(scoreSpan.style.color).toBe('rgb(210, 153, 34)') // #d29922
+    expect(scoreSpan.style.color).toBe('rgb(241, 168, 44)') // #F1A82C
   })
 
   it('uses orange color for low scores (30-49)', () => {
     const { container } = renderWithProviders(<ReputationGauge score={35} />)
     const scoreSpan = container.querySelector('span')!
-    expect(scoreSpan.style.color).toBe('rgb(240, 136, 62)') // #f0883e
+    expect(scoreSpan.style.color).toBe('rgb(247, 165, 1)') // #F7A501
   })
 
   it('uses red color for very low scores (<30)', () => {
     const { container } = renderWithProviders(<ReputationGauge score={15} />)
     const scoreSpan = container.querySelector('span')!
-    expect(scoreSpan.style.color).toBe('rgb(248, 81, 73)') // #f85149
+    expect(scoreSpan.style.color).toBe('rgb(245, 78, 0)') // #F54E00
   })
 
   it('renders at small size', () => {

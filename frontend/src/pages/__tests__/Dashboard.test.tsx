@@ -71,22 +71,15 @@ describe('Dashboard', () => {
 
     // Stat cards - top row
     expect(screen.getByText('Total Agents')).toBeInTheDocument()
-    expect(screen.getByText('Active')).toBeInTheDocument()
     expect(screen.getByText('Online Now')).toBeInTheDocument()
     expect(screen.getByText('Events Today')).toBeInTheDocument()
+    expect(screen.getByText('Pipeline Runs')).toBeInTheDocument()
 
     // Agent count value
     expect(screen.getByText('2')).toBeInTheDocument()
 
-    // Events today value (rendered as raw number by StatCard)
+    // Events today value
     expect(screen.getByText('1250')).toBeInTheDocument()
-
-    // Summary stats row (appears when total_events > 0)
-    expect(screen.getByText('Pipeline Runs')).toBeInTheDocument()
-    expect(screen.getByText('Pass Rate')).toBeInTheDocument()
-    expect(screen.getByText('Avg Duration')).toBeInTheDocument()
-    expect(screen.getByText('12.5%')).toBeInTheDocument()
-    expect(screen.getByText('450ms')).toBeInTheDocument()
   })
 
   it('renders empty state when no agents registered', () => {
@@ -104,7 +97,7 @@ describe('Dashboard', () => {
     expect(screen.getByText('Register your first agent')).toBeInTheDocument()
   })
 
-  it('does not render event stats row when no summary data', () => {
+  it('does not render trading stats when no wins/losses', () => {
     mockUseAgents.mockReturnValue({
       data: [mockAgentListItem],
       isLoading: false,
@@ -115,7 +108,7 @@ describe('Dashboard', () => {
 
     renderWithProviders(<Dashboard />)
 
-    expect(screen.queryByText('Pipeline Runs')).not.toBeInTheDocument()
-    expect(screen.queryByText('Pass Rate')).not.toBeInTheDocument()
+    expect(screen.queryByText('Executions')).not.toBeInTheDocument()
+    expect(screen.queryByText('Win Rate')).not.toBeInTheDocument()
   })
 })

@@ -50,7 +50,7 @@ describe('AgentCard', () => {
       <AgentCard agent={{ ...mockAgentListItem, is_online: true }} />,
     )
     const indicator = container.querySelector('.rounded-full')!
-    expect(indicator.className).toContain('bg-[#3fb950]')
+    expect(indicator.className).toContain('bg-[#77B96C]')
   })
 
   it('shows grey indicator when offline', () => {
@@ -58,6 +58,6 @@ describe('AgentCard', () => {
       <AgentCard agent={{ ...mockAgentListItem, is_online: false }} />,
     )
     const indicator = container.querySelector('.rounded-full')!
-    expect(indicator.className).toContain('bg-[#484f58]')
+    expect(indicator.className).toContain('bg-[#6B6F76]')
   })
 })

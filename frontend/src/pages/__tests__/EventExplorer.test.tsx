@@ -70,11 +70,11 @@ describe('EventExplorer', () => {
 
     renderWithProviders(<EventExplorer />)
     expect(
-      screen.getByText('No events found. Run bridge sync to populate.'),
+      screen.getByText('No events found for this filter.'),
     ).toBeInTheDocument()
   })
 
-  it('renders filter selects with correct options', () => {
+  it('renders quick filter tabs', () => {
     mockUseAllEvents.mockReturnValue({
       data: undefined,
       isLoading: false,
@@ -82,14 +82,14 @@ describe('EventExplorer', () => {
 
     renderWithProviders(<EventExplorer />)
 
-    // Event type filter options
-    const typeSelect = screen.getByLabelText('Filter by event type') as HTMLSelectElement
-    expect(typeSelect).toBeInTheDocument()
-    expect(typeSelect.options).toHaveLength(10) // All Types + 9 event types
-    expect(typeSelect.options[0].textContent).toBe('All Types')
-    expect(typeSelect.options[1].textContent).toBe('Price Fetch')
+    // Quick filter tabs
+    expect(screen.getByText('Trades')).toBeInTheDocument()
+    expect(screen.getByText('Signals')).toBeInTheDocument()
+    expect(screen.getByText('All')).toBeInTheDocument()
+    expect(screen.getByText('Momentum')).toBeInTheDocument()
+    expect(screen.getByText('Prices')).toBeInTheDocument()
 
-    // Outcome filter options
+    // Outcome filter select
     const outcomeSelect = screen.getByLabelText('Filter by outcome') as HTMLSelectElement
     expect(outcomeSelect).toBeInTheDocument()
     expect(outcomeSelect.options).toHaveLength(6) // All Outcomes + 5 outcomes
