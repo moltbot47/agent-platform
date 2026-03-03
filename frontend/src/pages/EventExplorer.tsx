@@ -3,18 +3,13 @@ import Header from '../components/Layout/Header'
 import { useAllEvents } from '../hooks/useEvents'
 import type { EventOutcome, EventType } from '../types/event'
 
-const EVENT_TYPES: { value: string; label: string }[] = [
-  { value: '', label: 'All Types' },
-  { value: 'price_fetch', label: 'Price Fetch' },
-  { value: 'momentum', label: 'Momentum' },
-  { value: 'market_lean', label: 'Market Lean' },
-  { value: 'edge_gate', label: 'Edge Gate' },
-  { value: 'signal', label: 'Signal' },
-  { value: 'execution', label: 'Execution' },
-  { value: 'resolution', label: 'Resolution' },
-  { value: 'trade', label: 'Trade' },
-  { value: 'prediction', label: 'Prediction' },
-]
+const QUICK_FILTERS = [
+  { label: 'Trades', types: 'execution,resolution' },
+  { label: 'Signals', types: 'signal,edge_gate' },
+  { label: 'All', types: '' },
+  { label: 'Momentum', types: 'momentum' },
+  { label: 'Prices', types: 'price_fetch' },
+] as const
 
 const OUTCOMES: { value: string; label: string }[] = [
   { value: '', label: 'All Outcomes' },
@@ -27,7 +22,7 @@ const OUTCOMES: { value: string; label: string }[] = [
 
 const OUTCOME_COLORS: Record<EventOutcome, string> = {
   pass: 'bg-[#4B7A3E] text-white',
-  block: 'bg-[#DF4313] text-white',
+  block: 'bg-[#3C3E48] text-[#9B9EA3]',
   modify: 'bg-[#F1A82C] text-white',
   win: 'bg-[#77B96C] text-white',
   loss: 'bg-[#F54E00] text-white',
@@ -36,20 +31,31 @@ const OUTCOME_COLORS: Record<EventOutcome, string> = {
 }
 
 const TYPE_COLORS: Partial<Record<EventType, string>> = {
-  execution: 'text-[#B062FF]',
+  execution: 'text-[#1D4AFF]',
   resolution: 'text-[#F7A501]',
   trade: 'text-[#B062FF]',
   edge_gate: 'text-[#F54E00]',
   market_lean: 'text-[#5E8AFF]',
-  momentum: 'text-[#77B96C]',
+  momentum: 'text-[#6B6F76]',
   signal: 'text-[#5E8AFF]',
+  claim: 'text-[#77B96C]',
+  price_fetch: 'text-[#9B9EA3]',
+}
+
+const ROW_HIGHLIGHT: Partial<Record<string, string>> = {
+  execution: 'bg-[#1D4AFF]/5',
+  resolution: 'bg-[#F7A501]/5',
+  claim: 'bg-[#77B96C]/5',
 }
 
 export default function EventExplorer() {
-  const [eventType, setEventType] = useState('')
+  const [activeQuickFilter, setActiveQuickFilter] = useState(0) // Default: Trades
   const [outcome, setOutcome] = useState('')
   const [offset, setOffset] = useState(0)
   const limit = 50
+
+  const quickFilter = QUICK_FILTERS[activeQuickFilter]
+  const eventType = quickFilter.types
 
   const { data, isLoading } = useAllEvents({
     event_type: eventType || undefined,
@@ -70,30 +76,34 @@ export default function EventExplorer() {
         subtitle={`Browse and filter agent events — ${totalCount.toLocaleString()} total`}
       />
 
-      {/* Filters */}
-      <div className="flex gap-3 mb-5">
-        <label htmlFor="event-type-filter" className="sr-only">Filter by event type</label>
-        <select
-          id="event-type-filter"
-          value={eventType}
-          onChange={(e) => { setEventType(e.target.value); setOffset(0) }}
-          className="bg-[#22242C] border border-[#2C2E38] rounded-lg px-3 py-1.5 text-sm text-[#EEEEEE] focus:border-[#1D4AFF] focus:outline-none"
-        >
-          {EVENT_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
-          ))}
-        </select>
-        <label htmlFor="outcome-filter" className="sr-only">Filter by outcome</label>
-        <select
-          id="outcome-filter"
-          value={outcome}
-          onChange={(e) => { setOutcome(e.target.value); setOffset(0) }}
-          className="bg-[#22242C] border border-[#2C2E38] rounded-lg px-3 py-1.5 text-sm text-[#EEEEEE] focus:border-[#1D4AFF] focus:outline-none"
-        >
-          {OUTCOMES.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
+      {/* Quick filter tabs */}
+      <div className="flex items-center gap-2 mb-4">
+        {QUICK_FILTERS.map((f, i) => (
+          <button
+            key={f.label}
+            onClick={() => { setActiveQuickFilter(i); setOffset(0) }}
+            className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
+              activeQuickFilter === i
+                ? 'bg-[#1D4AFF] text-white'
+                : 'bg-[#22242C] border border-[#2C2E38] text-[#9B9EA3] hover:text-[#EEEEEE] hover:border-[#3C3E48]'
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+        <div className="ml-auto">
+          <label htmlFor="outcome-filter" className="sr-only">Filter by outcome</label>
+          <select
+            id="outcome-filter"
+            value={outcome}
+            onChange={(e) => { setOutcome(e.target.value); setOffset(0) }}
+            className="bg-[#22242C] border border-[#2C2E38] rounded-lg px-3 py-1.5 text-xs text-[#EEEEEE] focus:border-[#1D4AFF] focus:outline-none"
+          >
+            {OUTCOMES.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Events Table */}
@@ -120,14 +130,14 @@ export default function EventExplorer() {
             ) : events.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-10 text-center text-[#6B6F76]">
-                  No events found. Run bridge sync to populate.
+                  No events found for this filter.
                 </td>
               </tr>
             ) : (
               events.map((event) => (
                 <tr
                   key={event.id}
-                  className="border-b border-[#2C2E38] hover:bg-[#2C2E38]/50 transition-colors"
+                  className={`border-b border-[#2C2E38] hover:bg-[#2C2E38]/50 transition-colors ${ROW_HIGHLIGHT[event.event_type] ?? ''}`}
                 >
                   <td className="px-4 py-3 font-mono text-xs text-[#9B9EA3] whitespace-nowrap">
                     {new Date(event.timestamp).toLocaleString('en-US', {
@@ -138,25 +148,25 @@ export default function EventExplorer() {
                       second: '2-digit',
                     })}
                   </td>
-                  <td className="px-4 py-3 text-[#EEEEEE]">
+                  <td className="px-4 py-3 text-[#EEEEEE] text-xs">
                     {event.agent_name}
                   </td>
-                  <td className={`px-4 py-3 font-mono text-xs ${TYPE_COLORS[event.event_type] ?? 'text-[#9B9EA3]'}`}>
+                  <td className={`px-4 py-3 font-mono text-xs font-medium ${TYPE_COLORS[event.event_type] ?? 'text-[#9B9EA3]'}`}>
                     {event.event_type}
                   </td>
                   <td className="px-4 py-3 text-[#EEEEEE] font-mono text-xs">
                     {event.instrument || '—'}
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-block px-2 py-0.5 rounded-md text-xs font-medium ${OUTCOME_COLORS[event.outcome]}`}>
+                    <span className={`inline-block px-2 py-0.5 rounded-md text-[10px] font-medium ${OUTCOME_COLORS[event.outcome]}`}>
                       {event.outcome}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right font-mono text-xs text-[#9B9EA3]">
                     {event.confidence != null ? `${(event.confidence * 100).toFixed(1)}%` : '—'}
                   </td>
-                  <td className="px-4 py-3 text-xs text-[#6B6F76] max-w-xs truncate">
-                    {summarizePayload(event.payload)}
+                  <td className="px-4 py-3 text-xs text-[#9B9EA3] max-w-xs truncate">
+                    {summarizePayload(event.event_type, event.payload)}
                   </td>
                 </tr>
               ))
@@ -193,17 +203,36 @@ export default function EventExplorer() {
   )
 }
 
-function summarizePayload(payload: Record<string, unknown>): string {
+function summarizePayload(eventType: string, payload: Record<string, unknown>): string {
   if (!payload || Object.keys(payload).length === 0) return '—'
 
   const parts: string[] = []
-  if (payload.direction) parts.push(`${payload.direction}`)
-  if (payload.signal_direction) parts.push(`${payload.signal_direction}`)
-  if (payload.pnl != null) parts.push(`PnL: $${Number(payload.pnl).toFixed(2)}`)
-  if (payload.entry_price) parts.push(`entry: ${payload.entry_price}`)
-  if (payload.result) parts.push(`${payload.result}`)
-  if (payload.signal_reason) parts.push(`${payload.signal_reason}`)
-  if (payload.skip_reason) parts.push(`${payload.skip_reason}`)
 
-  return parts.join(' | ') || JSON.stringify(payload).slice(0, 80)
+  if (eventType === 'execution') {
+    if (payload.direction) parts.push(String(payload.direction))
+    if (payload.entry_price) parts.push(`@${payload.entry_price}`)
+    if (payload.size_usdc) parts.push(`$${payload.size_usdc}`)
+    if (payload.signal_reason) parts.push(String(payload.signal_reason))
+  } else if (eventType === 'resolution') {
+    if (payload.result) parts.push(String(payload.result))
+    if (payload.direction) parts.push(String(payload.direction))
+    if (payload.pnl != null) parts.push(`PnL: $${Number(payload.pnl).toFixed(2)}`)
+    if (payload.session_pnl != null) parts.push(`Session: $${Number(payload.session_pnl).toFixed(2)}`)
+  } else if (eventType === 'signal') {
+    if (payload.direction) parts.push(String(payload.direction))
+    if (payload.signal_reason) parts.push(String(payload.signal_reason))
+    if (payload.signal_type) parts.push(String(payload.signal_type))
+  } else if (eventType === 'momentum') {
+    if (payload.direction) parts.push(String(payload.direction))
+    if (payload.strength != null) parts.push(`str: ${payload.strength}`)
+    if (payload.skip_reason) parts.push(String(payload.skip_reason))
+  } else {
+    if (payload.direction) parts.push(String(payload.direction))
+    if (payload.reason) parts.push(String(payload.reason))
+    if (payload.pnl != null) parts.push(`PnL: $${Number(payload.pnl).toFixed(2)}`)
+    if (payload.signal_reason) parts.push(String(payload.signal_reason))
+    if (payload.skip_reason) parts.push(String(payload.skip_reason))
+  }
+
+  return parts.join(' · ') || JSON.stringify(payload).slice(0, 80)
 }

@@ -32,4 +32,7 @@ urlpatterns = [
     path("agents/<uuid:pk>/calibration/", views.CalibrationView.as_view(), name="agent-calibration"),
     path("agents/<uuid:pk>/pnl-curve/", views.PnLCurveView.as_view(), name="agent-pnl-curve"),
     path("agents/<uuid:pk>/outcome-by-type/", views.OutcomeByTypeView.as_view(), name="agent-outcome-by-type"),
+    # Trading stats + pipeline builder
+    path("agents/<uuid:pk>/trading-stats/", views.TradingStatsView.as_view(), name="agent-trading-stats"),
+    path("agents/<uuid:pk>/build-pipelines/", views.BuildPipelinesView.as_view(), name="agent-build-pipelines"),
 ]

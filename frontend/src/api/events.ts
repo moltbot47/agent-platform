@@ -51,3 +51,55 @@ export async function fetchPipelineRunDetail(runId: string): Promise<PipelineRun
   const { data } = await client.get(`/pipeline-runs/${runId}/`)
   return data
 }
+
+export interface TradingStats {
+  wins: number
+  losses: number
+  total_trades: number
+  win_rate: number
+  total_pnl: number
+  session_pnl: number
+  open_positions: {
+    cycle_id: string
+    instrument: string
+    direction: string
+    entry_price: number | null
+    shares: number | null
+    size_usdc: number | null
+    opened_at: string
+  }[]
+  open_position_count: number
+  recent_trades: {
+    id: string
+    event_type: string
+    outcome: string
+    instrument: string
+    confidence: number | null
+    timestamp: string
+    direction: string
+    entry_price: number | null
+    shares: number | null
+    size_usdc: number | null
+    pnl: number | null
+    result: string
+    signal_reason: string
+  }[]
+  instruments: {
+    instrument: string
+    total: number
+    wins: number
+    losses: number
+    win_rate: number
+    pnl: number
+  }[]
+}
+
+export async function fetchTradingStats(agentId: string): Promise<TradingStats> {
+  const { data } = await client.get(`/agents/${agentId}/trading-stats/`)
+  return data
+}
+
+export async function buildPipelines(agentId: string): Promise<{ cycles: number; runs_created: number; events_linked: number }> {
+  const { data } = await client.post(`/agents/${agentId}/build-pipelines/`)
+  return data
+}

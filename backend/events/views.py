@@ -1,6 +1,9 @@
 """API views for event capture, querying, and dashboard aggregation."""
 
-from django.db.models import Avg, Count, Q
+import logging
+
+from django.db.models import Avg, Count, Q, Sum
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status
@@ -8,7 +11,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from agents.models import AgentAPIKey
+from agents.models import Agent, AgentAPIKey
 from core.permissions import IsAgentAuthenticated
 from core.posthog_client import capture as posthog_capture
 
@@ -24,6 +27,8 @@ from .serializers import (
     DecisionPipelineRunListSerializer,
     DecisionPipelineRunSerializer,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class EventIngestView(APIView):
@@ -56,6 +61,17 @@ class EventIngestView(APIView):
 
         # Broadcast via WebSocket
         broadcast_event(event)
+
+        # Auto-build pipeline runs on resolution/execution events
+        if event.event_type in ("resolution", "execution", "claim") and event.cycle_id:
+            try:
+                from bridge.pipeline_builder import build_pipeline_runs
+                from agents.reputation import recalculate_reputation
+                build_pipeline_runs(agent, limit=500)
+                if event.event_type == "resolution":
+                    recalculate_reputation(agent, window_days=30)
+            except Exception:
+                logger.debug("Auto-pipeline build failed for %s", agent.name, exc_info=True)
 
         return Response(AgentEventSerializer(event).data, status=status.HTTP_201_CREATED)
 
@@ -154,7 +170,12 @@ class AllEventsListView(generics.ListAPIView):
 
         event_type = self.request.query_params.get("event_type")
         if event_type:
-            qs = qs.filter(event_type=event_type)
+            # Support comma-separated event types (e.g. "execution,resolution")
+            types = [t.strip() for t in event_type.split(",") if t.strip()]
+            if len(types) == 1:
+                qs = qs.filter(event_type=types[0])
+            else:
+                qs = qs.filter(event_type__in=types)
 
         outcome = self.request.query_params.get("outcome")
         if outcome:
@@ -318,3 +339,147 @@ class OutcomeByTypeView(APIView):
     def get(self, request, pk):
         data = get_outcome_by_type(str(pk))
         return Response(data)
+
+
+class TradingStatsView(APIView):
+    """Per-agent trading stats: W/L, PnL, recent trades, instrument breakdown."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, pk):
+        agent_id = str(pk)
+
+        # Resolved trades (win/loss)
+        resolved = AgentEvent.objects.filter(
+            agent_id=agent_id,
+            event_type="resolution",
+            outcome__in=["win", "loss"],
+        )
+        agg = resolved.aggregate(
+            total=Count("id"),
+            wins=Count("id", filter=Q(outcome="win")),
+            losses=Count("id", filter=Q(outcome="loss")),
+        )
+
+        # PnL from payloads
+        total_pnl = 0.0
+        for ev in resolved.values("payload"):
+            if isinstance(ev["payload"], dict):
+                total_pnl += float(ev["payload"].get("pnl", 0))
+
+        # Session PnL (from latest resolution event payload)
+        latest_resolution = resolved.order_by("-timestamp").first()
+        session_pnl = 0.0
+        if latest_resolution and isinstance(latest_resolution.payload, dict):
+            session_pnl = float(latest_resolution.payload.get("session_pnl", total_pnl))
+
+        # Recent trades (last 20 execution + resolution events)
+        recent = (
+            AgentEvent.objects.filter(
+                agent_id=agent_id,
+                event_type__in=["execution", "resolution"],
+            )
+            .order_by("-timestamp")[:20]
+        )
+        recent_trades = []
+        for ev in recent:
+            payload = ev.payload if isinstance(ev.payload, dict) else {}
+            recent_trades.append({
+                "id": str(ev.id),
+                "event_type": ev.event_type,
+                "outcome": ev.outcome,
+                "instrument": ev.instrument,
+                "confidence": ev.confidence,
+                "timestamp": ev.timestamp.isoformat(),
+                "direction": payload.get("direction", ""),
+                "entry_price": payload.get("entry_price"),
+                "shares": payload.get("shares"),
+                "size_usdc": payload.get("size_usdc"),
+                "pnl": payload.get("pnl"),
+                "result": payload.get("result", ""),
+                "signal_reason": payload.get("signal_reason", ""),
+            })
+
+        # Instrument breakdown
+        instrument_stats = (
+            resolved.values("instrument")
+            .annotate(
+                total=Count("id"),
+                wins=Count("id", filter=Q(outcome="win")),
+                losses=Count("id", filter=Q(outcome="loss")),
+            )
+            .order_by("-total")
+        )
+        instruments = []
+        for row in instrument_stats:
+            # Calculate PnL per instrument
+            inst_pnl = 0.0
+            for ev in resolved.filter(instrument=row["instrument"]).values("payload"):
+                if isinstance(ev["payload"], dict):
+                    inst_pnl += float(ev["payload"].get("pnl", 0))
+            wr = row["wins"] / row["total"] if row["total"] > 0 else 0
+            instruments.append({
+                "instrument": row["instrument"],
+                "total": row["total"],
+                "wins": row["wins"],
+                "losses": row["losses"],
+                "win_rate": round(wr, 4),
+                "pnl": round(inst_pnl, 4),
+            })
+
+        # Open positions (executions without a matching resolution in same cycle)
+        exec_cycles = set(
+            AgentEvent.objects.filter(
+                agent_id=agent_id, event_type="execution",
+            ).values_list("cycle_id", flat=True)
+        )
+        resolved_cycles = set(
+            AgentEvent.objects.filter(
+                agent_id=agent_id, event_type="resolution",
+            ).values_list("cycle_id", flat=True)
+        )
+        open_cycles = exec_cycles - resolved_cycles - {""}
+        open_positions = []
+        for ev in AgentEvent.objects.filter(
+            agent_id=agent_id, event_type="execution", cycle_id__in=open_cycles,
+        ).order_by("-timestamp")[:20]:
+            payload = ev.payload if isinstance(ev.payload, dict) else {}
+            open_positions.append({
+                "cycle_id": ev.cycle_id,
+                "instrument": ev.instrument,
+                "direction": payload.get("direction", ""),
+                "entry_price": payload.get("entry_price"),
+                "shares": payload.get("shares"),
+                "size_usdc": payload.get("size_usdc"),
+                "opened_at": ev.timestamp.isoformat(),
+            })
+
+        return Response({
+            "wins": agg["wins"],
+            "losses": agg["losses"],
+            "total_trades": agg["total"],
+            "win_rate": round(agg["wins"] / agg["total"], 4) if agg["total"] > 0 else 0,
+            "total_pnl": round(total_pnl, 4),
+            "session_pnl": round(session_pnl, 4),
+            "open_positions": open_positions,
+            "open_position_count": len(open_positions),
+            "recent_trades": recent_trades,
+            "instruments": instruments,
+        })
+
+
+class BuildPipelinesView(APIView):
+    """Manually trigger pipeline building for an agent."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request, pk):
+        try:
+            agent = Agent.objects.get(pk=pk)
+        except Agent.DoesNotExist:
+            return Response({"detail": "Agent not found."}, status=status.HTTP_404_NOT_FOUND)
+        from bridge.pipeline_builder import build_pipeline_runs
+        from agents.reputation import recalculate_reputation
+        stats = build_pipeline_runs(agent, limit=50000)
+        recalculate_reputation(agent, window_days=30)
+        return Response(stats)
